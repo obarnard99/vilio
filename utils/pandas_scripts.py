@@ -1,5 +1,4 @@
 # Collection of pandas scripts that may be useful
-import numpy as np
 import pandas as pd
 import os
 
@@ -11,54 +10,16 @@ import imagehash
 # https://content-blockchain.org/research/testing-different-image-hash-functions/
 
 def phash(img_path):
+    # Identifies dups even when caption is different
     phash = imagehash.phash(Image.open(img_path))
     return phash
 
-def crude_hash(img_path):
-    """
-    The function generates a hash based on simple comparisons such as dimensions of an image
-    """
-    img = Image.open(img_path)
-    img = np.asarray(img, dtype="int32")    
-    # Going down the diagonal from ri up corner until no b/w/g value 
-    row_val = 0
-    col_val = -1
-    try:
-        while((not(255 > img[row_val, col_val, 0] > 1)) 
-              or (not(img[row_val, col_val, 0] != img[row_val, col_val, 1] != img[row_val, col_val, 2]))):
-            row_val += 1
-            col_val -= 1    
-    except:
-        row_val = 0
-        col_val = -1
-        
-        try:
-            while(not(255 > img[row_val, col_val, 0] > 1)): 
-                row_val += 1
-                col_val -= 1  
-        except:
-            try:
-                # It has no 3 channels
-                while(not(255 > img[row_val, col_val] > 1)): 
-                    row_val += 1
-                    col_val -= 1 
-                    
-            except:
-                print("3x Except: ", img_path)
-                
-            hash_v = str(img.shape[0]) + str(img.shape[1]) + str(img[row_val, col_val]) * 3
-            return hash_v
-            
-    hash_v = str(img.shape[0]) + str(img.shape[1]) + str(img[row_val, col_val, 0]) + str(img[row_val, col_val, 1]) + str(img[row_val, col_val, 2])    
-    return hash_v
 
+# Data Cleaning
 
-### Data Cleaning
-
-# The HM Dataset is very noisy:
-#  In the first version of the dataset there were many duplicates with conflicting labels
-#  In the second version, the conflicting labels have all been resolved, yet the duplicates remain
-def clean_data(data_path="./data"):
+# The HM Dataset is very noisy: In the first version of the dataset there were many duplicates with conflicting labels
+# In the second version, the conflicting labels have all been resolved, yet the duplicates remain
+def clean_data(data_path="./data", force=False):
     """
     Cleans the HM train & dev data.
     Outputs traindev & pretrain data.
@@ -67,79 +28,70 @@ def clean_data(data_path="./data"):
     """
     # Check if the statement was already run and the necessary data exists:
     if os.path.exists(os.path.join(data_path, "pretrain.jsonl")):
-        return
+        print('Clean datasets already exist')
+        if not force:
+            return
+        print('Rebuilding clean datasets...')
     else:
         print("Preparing...")
 
-    ## Load all files
+    # Load all files
     train = pd.read_json(os.path.join(data_path, "train.jsonl"), lines=True, orient="records")
     dev_seen = pd.read_json(os.path.join(data_path, "dev_seen.jsonl"), lines=True, orient="records")
-    # We validate with dev_seen throughout all experiments, so we only take the new data from dev_unseen add it to train and then discard dev_unseen
-    dev_unseen = pd.read_json(os.path.join(data_path,"dev_unseen.jsonl"), lines=True, orient="records")
+
+    # We validate with dev_seen throughout all experiments, so we only take the new data from dev_unseen add it to
+    # train and then discard dev_unseen
+    dev_unseen = pd.read_json(os.path.join(data_path, "dev_unseen.jsonl"), lines=True, orient="records")
     dev_unseen = dev_unseen[~dev_unseen['id'].isin(dev_seen.id.values)].copy()
 
-    ## Clean training data
+    # Clean training data
     df_dict = {'train': train, 'dev_seen': dev_seen, 'dev_unseen': dev_unseen}
-    train_dist = pd.concat([df.assign(identity=key) for key,df in df_dict.items()])
-
-    # Hash images
+    train_dist = pd.concat([df.assign(identity=key) for key, df in df_dict.items()])
     train_dist['full_path'] = train_dist['img'].apply(lambda x: os.path.join(data_path, str(x)))
-    train_dist['hash'] = train_dist['full_path'].apply(lambda x: phash(x))
-    train_dist['hash_cr'] = train_dist['full_path'].apply(lambda x: crude_hash(x))
 
-    # Find dups among images & text
-    train_dist['img_dup0'] = train_dist.duplicated(subset='hash', keep=False)
-    train_dist['img_dup1'] = train_dist.duplicated(subset='hash_cr', keep=False)
-    train_dist["txtdup"] = train_dist.duplicated(subset='text', keep=False)
-
-    # Identify 100% dups
-    hash_df = train_dist.hash.value_counts().reset_index(name="counter")
-    hash_df = hash_df.loc[hash_df['counter'] > 1]
-    hash_df["hash"] = hash_df["index"].astype(str)
+    # Identify text dups
+    text_dups = train_dist.text.value_counts().reset_index(name="counter")
+    text_dups = text_dups.loc[text_dups['counter'] > 1]
 
     rmv_ids = []
+    for t in text_dups['index'].values:
+        # Identify image dups
+        text_dup_df = train_dist.loc[train_dist.text == t].copy()
+        text_dup_df['hash'] = text_dup_df['full_path'].apply(lambda x: phash(x))
+        hash_dups = text_dup_df.hash.value_counts().reset_index(name="counter")
+        hash_dups = hash_dups.loc[hash_dups['counter'] > 1]
 
-    for h in hash_df['index'].astype(str).values:
-        hash_group = train_dist.loc[train_dist.hash.astype(str) == h]
-        
-        txtdup = hash_group.duplicated(subset='text', keep=False).values
-        imgdup1 = hash_group.duplicated(subset='hash_cr', keep=False).values
-        
-        if (True in txtdup) and (True in imgdup1):
-            if len(txtdup) == 2:
-                if hash_group.label.values[0] == hash_group.label.values[1]:
-                    rmv_ids.append(hash_group.id.values[0]) # They are 100% identical, we'll just rmv the first
-                else:
-                    print("Labs not the same:", hash_group.id.values, hash_group.label.values) # None here
-            else:
-                # About 15 examples which are in the below ISIS & ADD lists.
-                pass
+        for h in hash_dups['index'].values:
+            # Identify correct label by majority rule
+            dup_df = text_dup_df.loc[text_dup_df.hash == h]
+            true_label = round(dup_df.label.values.mean())
 
-    ISIS_dups = [35097, 97542, 91562, 71368, 29013, 85173, 15072, 1348, 70269, 36804, 68954, 91270, 64781, 96078, 97162, 34518, 17834,
-                 31408, 56134, 68231, 98517, 27156, 10793, 82169, 25780, 25913, 95401, 94850, 50624, 92845, 58732]
-    ADD_dups = [54981, 71903, 69087]
+            # Add duplicate IDs to rmv_ids except for last one
+            rmv_ids.extend(dup_df.loc[dup_df.label != true_label].id.values)
+            rmv_ids.extend(dup_df.loc[dup_df.label == true_label].id.values)
+            rmv_ids.pop()
 
-    rmv_ids.extend(ISIS_dups)
-    rmv_ids.extend(ADD_dups)
-    
-    ## Output all files we need
-    
-    # a) Pretrain file for ITM & LM pre-training
+    # Output all files we need
 
+    # a) Clean train file (All duplicates are in train)
+    train = train[~train['id'].isin(rmv_ids)].copy()
+    train.to_json(path_or_buf=os.path.join(data_path, "train.jsonl"), orient='records', lines=True)
+
+    # b) Pretrain file for ITM & LM pre-training
     pretrain = pd.concat([train, dev_seen, dev_unseen])
-
-    # The following ids throw some dimension error when pre-training; we can afford to skip them
-    dim_error = [63805, 73026, 16845, 27058]
-    pretrain = pretrain[~pretrain['id'].isin(dim_error)]
-    # Note: The following is slightly different than I did in the original submission, but it performs in fact better
-    pretrain["label"].fillna(0, inplace=True)
+    #dim_error = [63805, 73026, 16845, 27058]  # The following ids throw some dimension error when pre-training
+    #pretrain = pretrain[~pretrain['id'].isin(dim_error)]
+    #pretrain["label"].fillna(0, inplace=True)
     pretrain.to_json(path_or_buf=os.path.join(data_path, "pretrain.jsonl"), orient='records', lines=True)
 
-    # b) Cleaned Train + unused data from dev_unseen (All duplicates are in train, hence the following suffices)
-    train = train[~train['id'].isin(rmv_ids)].copy()
-    trainclean = pd.concat([train, dev_unseen])
-    trainclean.to_json(path_or_buf=os.path.join(data_path, "train.jsonl"), orient='records', lines=True)
+    # c) Cleaned Train + unused data from dev_unseen
+    trainlarge = pd.concat([train, dev_unseen])
+    trainlarge.to_json(path_or_buf=os.path.join(data_path, "trainlarge.jsonl"), orient='records', lines=True)
 
-    # c) Cleaned Train + unused data from dev_unseen + dev_seen
-    traincleandev = pd.concat([train, dev_unseen, dev_seen])
-    traincleandev.to_json(path_or_buf=os.path.join(data_path, "traindev.jsonl"), orient='records', lines=True)
+    # d) Cleaned Train + unused data from dev_unseen + dev_seen
+    traindev = pd.concat([train, dev_unseen, dev_seen])
+    traindev.to_json(path_or_buf=os.path.join(data_path, "traindev.jsonl"), orient='records', lines=True)
+
+
+if __name__ == '__main__':
+    clean_data(data_path='C:/Users/obarn/Projects/F-MT126-1/data/hmc_unseen/', force=True)
