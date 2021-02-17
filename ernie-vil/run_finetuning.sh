@@ -1,7 +1,5 @@
-# set shell variables - print executed commands, exit immediatiately
 set -eu
 set -x
-
 
 #bash -x ./env.sh
 
@@ -51,6 +49,10 @@ python finetune.py --use_cuda "True"                                           \
                 --lr_scheduler ${lr_scheduler}                                 \
                 --decay_steps ${decay_steps-""}                                \
                 --lr_decay_ratio ${lr_decay_ratio-0.1}                         \
+                --layer_decay_rate ${layer_decay_rate-0.0}                     \
+                --text_init_layers ${text_init_layers-18}                      \
+                --n_layers ${n_layers-30}                                      \
+                --margin ${margin-0.3}                                         \
                 --num_train_steps ${num_train_steps}                           \
                 --checkpoints $output_model_path                               \
                 --save_steps ${SAVE_STEPS}                                     \

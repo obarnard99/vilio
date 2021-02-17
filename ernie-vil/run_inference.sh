@@ -16,6 +16,8 @@ COMB=${11}
 
 source $CONF_FILE
 
+#export LD_LIBRARY_PATH=/home/work/cuda-9.0/lib64:/home/work/cudnn/cudnn_v7/cuda/lib64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=./nccl_2.3.5/lib/:$LD_LIBRARY_PATH
 #configure your cuda and cudnn
 #configure nccl
 
@@ -31,7 +33,7 @@ if [[ ${use_fuse} == "true" ]]; then
     export FLAGS_fuse_parameter_groups_size=10
 fi
 
-TASK_GROUP_JSON=./conf/$TASK_NAME/task_${TASK_NAME}.json 
+TASK_GROUP_JSON=./conf/$TASK_NAME/task_${TASK_NAME}.json
 #_${SUB_TASK_NAME}.json
 
 python finetune.py --use_cuda "True"                                           \
