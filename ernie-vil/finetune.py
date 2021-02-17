@@ -343,7 +343,7 @@ def create_vcr_model(pyreader_name, ernie_config, task_group, is_prediction=Fals
         dtypes.append('float')
         lod_levels.append(0)
 
-    pyreader = fluid.layers.py_reader(
+    pyreader = fluid.io.DataLoader.from_generator(
         capacity=30,
         shapes=shapes,
         dtypes=dtypes,
