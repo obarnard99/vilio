@@ -16,14 +16,16 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--enspath", type=str, default="./data", help="Path to folder with all csvs")
-    parser.add_argument("--enstype", type=str, default="loop", help="Type of ensembling to be performed - Current options: loop / sa")
+    parser.add_argument("--enstype", type=str, default="loop",
+                        help="Type of ensembling to be performed - Current options: loop / sa")
     parser.add_argument("--exp", type=str, default="experiment", help="Name of experiment for csv's")
     parser.add_argument('--subdata', action='store_const', default=False, const=True)
-    
+
     # Parse the arguments.
     args = parser.parse_args()
 
     return args
+
 
 ### FUNCTIONS IMPLEMENTING ENSEMBLE METHODS ###
 
@@ -36,7 +38,6 @@ def parse_args():
 # Specificity / tnr = TN / N
 
 def get_acc_and_best_threshold_from_roc_curve(tpr, fpr, thresholds, num_pos_class, num_neg_class):
-
     tp = tpr * num_pos_class
     tn = (1 - fpr) * num_neg_class
     acc = (tp + tn) / (num_pos_class + num_neg_class)
@@ -44,6 +45,7 @@ def get_acc_and_best_threshold_from_roc_curve(tpr, fpr, thresholds, num_pos_clas
     best_threshold = thresholds[np.argmax(acc)]
 
     return np.amax(acc), best_threshold
+
 
 def set_acc(row, threshold):
     if row['proba'] >= threshold:
@@ -69,13 +71,13 @@ def simple_average(targets, example, weights=None, power=1, normalize=False):
         weights = weights / np.sum(weights)
 
     preds = example.copy()
-    preds.iloc[:,1] = np.zeros(len(preds))
+    preds.iloc[:, 1] = np.zeros(len(preds))
 
     if normalize:
-        targets = (targets - targets.min())/(targets.max()-targets.min())
+        targets = (targets - targets.min()) / (targets.max() - targets.min())
     for i in range(len(targets.columns)):
-        preds.iloc[:,1] = np.add(preds.iloc[:, 1], weights[i] * (targets.iloc[:, i].astype(float)**power))
-    
+        preds.iloc[:, 1] = np.add(preds.iloc[:, 1], weights[i] * (targets.iloc[:, i].astype(float) ** power))
+
     return preds
 
 
@@ -89,10 +91,10 @@ def rank_average(subs, weights=None):
     else:
         weights = weights / np.sum(weights)
     preds = subs[0].copy()
-    preds.iloc[:,1] = np.zeros(len(subs[0]))
+    preds.iloc[:, 1] = np.zeros(len(subs[0]))
     for i, sub in enumerate(subs):
-        preds.iloc[:,1] = np.add(preds.iloc[:,1], weights[i] * rankdata(sub.iloc[:,1]) / len(sub))
-        
+        preds.iloc[:, 1] = np.add(preds.iloc[:, 1], weights[i] * rankdata(sub.iloc[:, 1]) / len(sub))
+
     return preds
 
 
@@ -110,151 +112,149 @@ import matplotlib.pyplot as plotter
 
 CAPACITY_INCREMENT = 1000
 
+
 class _Simplex:
-	def __init__(self, pointIndices, testCoords, contentFractions, objectiveScore, opportunityCost, contentFraction, difference):
-		self.pointIndices = pointIndices
-		self.testCoords = testCoords
-		self.contentFractions = contentFractions
-		self.contentFraction = contentFraction
-		self.__objectiveScore = objectiveScore
-		self.__opportunityCost = opportunityCost
-		self.update(difference)
+    def __init__(self, pointIndices, testCoords, contentFractions, objectiveScore, opportunityCost, contentFraction,
+                 difference):
+        self.pointIndices = pointIndices
+        self.testCoords = testCoords
+        self.contentFractions = contentFractions
+        self.contentFraction = contentFraction
+        self.__objectiveScore = objectiveScore
+        self.__opportunityCost = opportunityCost
+        self.update(difference)
 
-	def update(self, difference):
-		self.acquisitionValue = -(self.__objectiveScore + (self.__opportunityCost * difference))
-		self.difference = difference
+    def update(self, difference):
+        self.acquisitionValue = -(self.__objectiveScore + (self.__opportunityCost * difference))
+        self.difference = difference
 
-	def __eq__(self, other):
-		return self.acquisitionValue == other.acquisitionValue
+    def __eq__(self, other):
+        return self.acquisitionValue == other.acquisitionValue
 
-	def __lt__(self, other):
-		return self.acquisitionValue < other.acquisitionValue
+    def __lt__(self, other):
+        return self.acquisitionValue < other.acquisitionValue
+
 
 class SimpleTuner:
-	def __init__(self, cornerPoints, objectiveFunction, exploration_preference=0.15):
-		self.__cornerPoints = cornerPoints
-		self.__numberOfVertices = len(cornerPoints)
-		self.queue = []
-		self.capacity = self.__numberOfVertices + CAPACITY_INCREMENT
-		self.testPoints = numpy.empty((self.capacity, self.__numberOfVertices))
-		self.objective = objectiveFunction
-		self.iterations = 0
-		self.maxValue = None
-		self.minValue = None
-		self.bestCoords = []
-		self.opportunityCostFactor = exploration_preference #/ self.__numberOfVertices
-			
+    def __init__(self, cornerPoints, objectiveFunction, exploration_preference=0.15):
+        self.__cornerPoints = cornerPoints
+        self.__numberOfVertices = len(cornerPoints)
+        self.queue = []
+        self.capacity = self.__numberOfVertices + CAPACITY_INCREMENT
+        self.testPoints = numpy.empty((self.capacity, self.__numberOfVertices))
+        self.objective = objectiveFunction
+        self.iterations = 0
+        self.maxValue = None
+        self.minValue = None
+        self.bestCoords = []
+        self.opportunityCostFactor = exploration_preference  # / self.__numberOfVertices
 
-	def optimize(self, maxSteps=10):
-		for step in range(maxSteps):
-			#print(self.maxValue, self.iterations, self.bestCoords)
-			if len(self.queue) > 0:
-				targetSimplex = self.__getNextSimplex()
-				newPointIndex = self.__testCoords(targetSimplex.testCoords)
-				for i in range(0, self.__numberOfVertices):
-					tempIndex = targetSimplex.pointIndices[i]
-					targetSimplex.pointIndices[i] = newPointIndex
-					newContentFraction = targetSimplex.contentFraction * targetSimplex.contentFractions[i]
-					newSimplex = self.__makeSimplex(targetSimplex.pointIndices, newContentFraction)
-					heappush(self.queue, newSimplex)
-					targetSimplex.pointIndices[i] = tempIndex
-			else:
-				testPoint = self.__cornerPoints[self.iterations]
-				testPoint.append(0)
-				testPoint = numpy.array(testPoint, dtype=numpy.float64)
-				self.__testCoords(testPoint)
-				if self.iterations == (self.__numberOfVertices - 1):
-					initialSimplex = self.__makeSimplex(numpy.arange(self.__numberOfVertices, dtype=numpy.intp), 1)
-					heappush(self.queue, initialSimplex)
-			self.iterations += 1
+    def optimize(self, maxSteps=10):
+        for step in range(maxSteps):
+            # print(self.maxValue, self.iterations, self.bestCoords)
+            if len(self.queue) > 0:
+                targetSimplex = self.__getNextSimplex()
+                newPointIndex = self.__testCoords(targetSimplex.testCoords)
+                for i in range(0, self.__numberOfVertices):
+                    tempIndex = targetSimplex.pointIndices[i]
+                    targetSimplex.pointIndices[i] = newPointIndex
+                    newContentFraction = targetSimplex.contentFraction * targetSimplex.contentFractions[i]
+                    newSimplex = self.__makeSimplex(targetSimplex.pointIndices, newContentFraction)
+                    heappush(self.queue, newSimplex)
+                    targetSimplex.pointIndices[i] = tempIndex
+            else:
+                testPoint = self.__cornerPoints[self.iterations]
+                testPoint.append(0)
+                testPoint = numpy.array(testPoint, dtype=numpy.float64)
+                self.__testCoords(testPoint)
+                if self.iterations == (self.__numberOfVertices - 1):
+                    initialSimplex = self.__makeSimplex(numpy.arange(self.__numberOfVertices, dtype=numpy.intp), 1)
+                    heappush(self.queue, initialSimplex)
+            self.iterations += 1
 
-	def get_best(self):
-		return (self.maxValue, self.bestCoords[0:-1])
+    def get_best(self):
+        return (self.maxValue, self.bestCoords[0:-1])
 
-	def __getNextSimplex(self):
-		targetSimplex = heappop(self.queue)
-		currentDifference = self.maxValue - self.minValue
-		while currentDifference > targetSimplex.difference:
-			targetSimplex.update(currentDifference)
-			# if greater than because heapq is in ascending order
-			if targetSimplex.acquisitionValue > self.queue[0].acquisitionValue:
-				targetSimplex = heappushpop(self.queue, targetSimplex)
-		return targetSimplex
-		
-	def __testCoords(self, testCoords):
-		objectiveValue = self.objective(testCoords[0:-1])
-		if self.maxValue == None or objectiveValue > self.maxValue: 
-			self.maxValue = objectiveValue
-			self.bestCoords = testCoords
-			if self.minValue == None: self.minValue = objectiveValue
-		elif objectiveValue < self.minValue:
-			self.minValue = objectiveValue
-		testCoords[-1] = objectiveValue
-		if self.capacity == self.iterations:
-			self.capacity += CAPACITY_INCREMENT
-			self.testPoints.resize((self.capacity, self.__numberOfVertices))
-		newPointIndex = self.iterations
-		self.testPoints[newPointIndex] = testCoords
-		return newPointIndex
+    def __getNextSimplex(self):
+        targetSimplex = heappop(self.queue)
+        currentDifference = self.maxValue - self.minValue
+        while currentDifference > targetSimplex.difference:
+            targetSimplex.update(currentDifference)
+            # if greater than because heapq is in ascending order
+            if targetSimplex.acquisitionValue > self.queue[0].acquisitionValue:
+                targetSimplex = heappushpop(self.queue, targetSimplex)
+        return targetSimplex
 
+    def __testCoords(self, testCoords):
+        objectiveValue = self.objective(testCoords[0:-1])
+        if self.maxValue == None or objectiveValue > self.maxValue:
+            self.maxValue = objectiveValue
+            self.bestCoords = testCoords
+            if self.minValue == None: self.minValue = objectiveValue
+        elif objectiveValue < self.minValue:
+            self.minValue = objectiveValue
+        testCoords[-1] = objectiveValue
+        if self.capacity == self.iterations:
+            self.capacity += CAPACITY_INCREMENT
+            self.testPoints.resize((self.capacity, self.__numberOfVertices))
+        newPointIndex = self.iterations
+        self.testPoints[newPointIndex] = testCoords
+        return newPointIndex
 
-	def __makeSimplex(self, pointIndices, contentFraction):
-		vertexMatrix = self.testPoints[pointIndices]
-		coordMatrix = vertexMatrix[:, 0:-1]
-		barycenterLocation = numpy.sum(vertexMatrix, axis=0) / self.__numberOfVertices
+    def __makeSimplex(self, pointIndices, contentFraction):
+        vertexMatrix = self.testPoints[pointIndices]
+        coordMatrix = vertexMatrix[:, 0:-1]
+        barycenterLocation = numpy.sum(vertexMatrix, axis=0) / self.__numberOfVertices
 
-		differences = coordMatrix - barycenterLocation[0:-1]
-		distances = numpy.sqrt(numpy.sum(differences * differences, axis=1))
-		totalDistance = numpy.sum(distances)
-		barycentricTestCoords = distances / totalDistance
+        differences = coordMatrix - barycenterLocation[0:-1]
+        distances = numpy.sqrt(numpy.sum(differences * differences, axis=1))
+        totalDistance = numpy.sum(distances)
+        barycentricTestCoords = distances / totalDistance
 
-		euclideanTestCoords = vertexMatrix.T.dot(barycentricTestCoords)
-		
-		vertexValues = vertexMatrix[:,-1]
+        euclideanTestCoords = vertexMatrix.T.dot(barycentricTestCoords)
 
-		testpointDifferences = coordMatrix - euclideanTestCoords[0:-1]
-		testPointDistances = numpy.sqrt(numpy.sum(testpointDifferences * testpointDifferences, axis=1))
+        vertexValues = vertexMatrix[:, -1]
 
+        testpointDifferences = coordMatrix - euclideanTestCoords[0:-1]
+        testPointDistances = numpy.sqrt(numpy.sum(testpointDifferences * testpointDifferences, axis=1))
 
+        inverseDistances = 1 / testPointDistances
+        inverseSum = numpy.sum(inverseDistances)
+        interpolatedValue = inverseDistances.dot(vertexValues) / inverseSum
 
-		inverseDistances = 1 / testPointDistances
-		inverseSum = numpy.sum(inverseDistances)
-		interpolatedValue = inverseDistances.dot(vertexValues) / inverseSum
+        currentDifference = self.maxValue - self.minValue
+        opportunityCost = self.opportunityCostFactor * math.log(contentFraction, self.__numberOfVertices)
 
+        return _Simplex(pointIndices.copy(), euclideanTestCoords, barycentricTestCoords, interpolatedValue,
+                        opportunityCost, contentFraction, currentDifference)
 
-		currentDifference = self.maxValue - self.minValue
-		opportunityCost = self.opportunityCostFactor * math.log(contentFraction, self.__numberOfVertices)
+    def plot(self):
+        if self.__numberOfVertices != 3: raise RuntimeError('Plotting only supported in 2D')
+        matrix = self.testPoints[0:self.iterations, :]
 
-		return _Simplex(pointIndices.copy(), euclideanTestCoords, barycentricTestCoords, interpolatedValue, opportunityCost, contentFraction, currentDifference)
+        x = matrix[:, 0].flat
+        y = matrix[:, 1].flat
+        z = matrix[:, 2].flat
 
-	def plot(self):
-		if self.__numberOfVertices != 3: raise RuntimeError('Plotting only supported in 2D')
-		matrix = self.testPoints[0:self.iterations, :]
+        coords = []
+        acquisitions = []
 
-		x = matrix[:,0].flat
-		y = matrix[:,1].flat
-		z = matrix[:,2].flat
+        for triangle in self.queue:
+            coords.append(triangle.pointIndices)
+            acquisitions.append(-1 * triangle.acquisitionValue)
 
-		coords = []
-		acquisitions = []
+        plotter.figure()
+        plotter.tricontourf(x, y, coords, z)
+        plotter.triplot(x, y, coords, color='white', lw=0.5)
+        plotter.colorbar()
 
-		for triangle in self.queue:
-			coords.append(triangle.pointIndices)
-			acquisitions.append(-1 * triangle.acquisitionValue)
+        plotter.figure()
+        plotter.tripcolor(x, y, coords, acquisitions)
+        plotter.triplot(x, y, coords, color='white', lw=0.5)
+        plotter.colorbar()
 
+        plotter.show()
 
-		plotter.figure()
-		plotter.tricontourf(x, y, coords, z)
-		plotter.triplot(x, y, coords, color='white', lw=0.5)
-		plotter.colorbar()
-
-
-		plotter.figure()
-		plotter.tripcolor(x, y, coords, acquisitions)
-		plotter.triplot(x, y, coords, color='white', lw=0.5)
-		plotter.colorbar()
-
-		plotter.show()
 
 def Simplex(devs, label, df_list=False, exploration=0.01, scale=1):
     """
@@ -280,7 +280,7 @@ def Simplex(devs, label, df_list=False, exploration=0.01, scale=1):
         ''' Will pass the weights as a numpy array '''
         final_prediction = 0
         for weight, prediction in zip(weights, predictions):
-                final_prediction += weight*prediction
+            final_prediction += weight * prediction
         return roc_auc_score(label, final_prediction)
 
     # This defines the search area, and other optimization parameters.
@@ -291,19 +291,19 @@ def Simplex(devs, label, df_list=False, exploration=0.01, scale=1):
 
     optimization_domain_vertices = np.concatenate((zero_vtx, optimization_domain_vertices), axis=0).tolist()
 
-    
     number_of_iterations = 3000
-    exploration = exploration # optional, default 0.01
+    exploration = exploration  # optional, default 0.01
 
     # Optimize weights
     tuner = SimpleTuner(optimization_domain_vertices, roc_auc, exploration_preference=exploration)
     tuner.optimize(number_of_iterations)
     best_objective_value, best_weights = tuner.get_best()
 
-    print('Optimized =', best_objective_value) # same as roc_auc(best_weights)
+    print('Optimized =', best_objective_value)  # same as roc_auc(best_weights)
     print('Weights =', best_weights)
 
     return best_weights
+
 
 ### APPLYING THE HELPER FUNCTIONS ###
 
@@ -315,7 +315,7 @@ def sa_wrapper(data_path="./data"):
     """
     # Make sure the lists will be ordered, i.e. test[0] is the same model as devs[0]
     dev, test, test_unseen = [], [], []
-    dev_probas, test_probas, test_unseen_probas = {}, {}, {} # Never dynamically add to a pd Dataframe
+    dev_probas, test_probas, test_unseen_probas = {}, {}, {}  # Never dynamically add to a pd Dataframe
 
     for csv in sorted(os.listdir(data_path)):
         if ".csv" in csv:
@@ -345,10 +345,10 @@ def sa_wrapper(data_path="./data"):
         if ".csv" in csv:
             if ("dev" in csv) or ("val" in csv):
                 os.remove(os.path.join(data_path, csv))
-                dev_SA.to_csv(os.path.join(data_path, args.exp, args.exp + "_dev_seen_SA.csv"), index=False)   
+                dev_SA.to_csv(os.path.join(data_path, args.exp, args.exp + "_dev_seen_SA.csv"), index=False)
             elif "test_unseen" in csv:
                 os.remove(os.path.join(data_path, csv))
-                test_unseen_SA.to_csv(os.path.join(data_path, args.exp, args.exp + "_test_unseen_SA.csv"), index=False)   
+                test_unseen_SA.to_csv(os.path.join(data_path, args.exp, args.exp + "_test_unseen_SA.csv"), index=False)
             elif "test" in csv:
                 os.remove(os.path.join(data_path, csv))
                 test_SA.to_csv(os.path.join(data_path, args.exp, args.exp + "_test_seen_SA.csv"), index=False)
@@ -368,7 +368,7 @@ def main(path, gt_path="./data/"):
 
     # Make sure the lists will be ordered, i.e. test[0] is the same model as devs[0]
     dev, test, test_unseen = [], [], []
-    dev_probas, test_probas, test_unseen_probas = {}, {}, {} # Never dynamically add to a pd Dataframe
+    dev_probas, test_probas, test_unseen_probas = {}, {}, {}  # Never dynamically add to a pd Dataframe
 
     for csv in sorted(os.listdir(path)):
         print(csv)
@@ -383,7 +383,6 @@ def main(path, gt_path="./data/"):
                 test.append(pd.read_csv(os.path.join(path, csv)))
                 test_probas[csv[:-7]] = pd.read_csv(os.path.join(path, csv)).proba.values
 
-
     dev_probas = pd.DataFrame(dev_probas)
     test_probas = pd.DataFrame(test_probas)
     test_unseen_probas = pd.DataFrame(test_unseen_probas)
@@ -393,8 +392,7 @@ def main(path, gt_path="./data/"):
     test_unseen_or = test_unseen.copy()
 
     if len(dev_df) > len(dev_probas):
-
-        print("Your predictions do not include the full dev!")        
+        print("Your predictions do not include the full dev!")
         dev_df = dev[0][["id"]].merge(dev_df, how="left", on="id")
 
     loop, last_score, delta = 0, 0, 0.1
@@ -409,7 +407,7 @@ def main(path, gt_path="./data/"):
             score = roc_auc_score(dev_df.label, dev_probas.iloc[:, i])
             print(column, score)
 
-        print('-'*50)
+        print('-' * 50)
 
         if loop > 0:
             while len(dev) > 5:
@@ -433,7 +431,7 @@ def main(path, gt_path="./data/"):
                 column_numbers = [x for x in range(test_unseen_probas.shape[1])]  # list of columns' integer indices
                 column_numbers.remove(drop)
                 test_unseen_probas = test_unseen_probas.iloc[:, column_numbers]
-    
+
                 if i < len(dev_or):
                     dev_or.pop(drop)
                     test_or.pop(drop)
@@ -442,19 +440,19 @@ def main(path, gt_path="./data/"):
                     dev.pop(drop)
                     test.pop(drop)
                     test_unseen.pop(drop)
-    
+
                 print("Dropped:", col)
-                
+
         # Spearman Correlations: 
         print("Spearman Corrs:")
         dev_corr = dev_probas.corr(method='spearman')
         test_corr = test_probas.corr(method='spearman')
         test_unseen_corr = test_unseen_probas.corr(method='spearman')
-        
-        print(dev_corr,'\n')
+
+        print(dev_corr, '\n')
         print(test_corr)
         print(test_unseen_corr)
-        print('-'*50)
+        print('-' * 50)
 
         ### SIMPLE AVERAGE ###
         dev_SA = simple_average(dev_probas, dev[0], power=1, normalize=True)
@@ -462,7 +460,7 @@ def main(path, gt_path="./data/"):
         test_unseen_SA = simple_average(test_unseen_probas, test_unseen[0], power=1, normalize=True)
 
         print(roc_auc_score(dev_df.label, dev_SA.proba), accuracy_score(dev_df.label, dev_SA.label))
-        print('-'*50)
+        print('-' * 50)
 
         ### POWER AVERAGE ###
         dev_PA = simple_average(dev_probas, dev[0], power=2, normalize=True)
@@ -470,7 +468,7 @@ def main(path, gt_path="./data/"):
         test_unseen_PA = simple_average(test_unseen_probas, test_unseen[0], power=2, normalize=True)
 
         print(roc_auc_score(dev_df.label, dev_PA.proba), accuracy_score(dev_df.label, dev_PA.label))
-        print('-'*50)
+        print('-' * 50)
 
         ### RANK AVERAGE ###
         dev_RA = rank_average(dev)
@@ -478,7 +476,7 @@ def main(path, gt_path="./data/"):
         test_unseen_RA = rank_average(test_unseen)
 
         print(roc_auc_score(dev_df.label, dev_RA.proba), accuracy_score(dev_df.label, dev_RA.label))
-        print('-'*50)
+        print('-' * 50)
 
         ### SIMPLEX ###
         weights_dev = Simplex(dev_probas, dev_df.label)
@@ -488,13 +486,13 @@ def main(path, gt_path="./data/"):
         test_unseen_SX = simple_average(test_unseen_probas, test_unseen[0], weights_dev)
 
         print(roc_auc_score(dev_df.label, dev_SX.proba), accuracy_score(dev_df.label, dev_SX.label))
-        print('-'*50)
+        print('-' * 50)
 
         # Prepare Next Round
         dev = dev_or + [dev_SA, dev_PA, dev_RA, dev_SX]
         test = test_or + [test_SA, test_PA, test_RA, test_SX]
         test_unseen = test_unseen_or + [test_unseen_SA, test_unseen_PA, test_unseen_RA, test_unseen_SX]
-        
+
         dev_probas = pd.concat([df.proba for df in dev], axis=1)
         test_probas = pd.concat([df.proba for df in test], axis=1)
         test_unseen_probas = pd.concat([df.proba for df in test_unseen], axis=1)
@@ -508,7 +506,7 @@ def main(path, gt_path="./data/"):
         # I found the loop to not add any value after 2 rounds.
         if loop == 2:
             break
-    
+
     print("Currently at {} after {} loops.".format(last_score, loop))
 
     # Get accuracy thresholds & optimize (This does not add value to the roc auc, but just to also have an acc score)
@@ -524,11 +522,12 @@ def main(path, gt_path="./data/"):
     test_unseen_SX.to_csv(os.path.join(path, "FIN_test_unseen_" + args.exp + "_" + str(loop) + ".csv"), index=False)
 
     print("Finished.")
-  
+
+
 if __name__ == "__main__":
 
     args = parse_args()
-    
+
     if args.enstype == "loop":
         main(args.enspath)
     elif args.enstype == "sa":

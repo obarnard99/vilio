@@ -17,8 +17,6 @@ import pickle
 import lmdb # install lmdb by "pip install lmdb"
 import base64
 
-import os
-
 class ImageFeaturesH5Reader(object):
     """
     Reader class
