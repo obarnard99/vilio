@@ -17,6 +17,8 @@ source $CONF_FILE
 
 #configure your cuda and cudnn 
 #configure nccl
+#export LD_LIBRARY_PATH=/usr/local/cuda-10.1/lib64/:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=./nccl_2.3.5/lib/:$LD_LIBRARY_PATH
 CUDA_VISIBLE_DEVICES=1
 
 export FLAGS_fast_eager_deletion_mode=1
