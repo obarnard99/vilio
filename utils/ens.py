@@ -361,7 +361,6 @@ def main(path, gt_path="./data/"):
 
     # Make sure the lists will be ordered, i.e. test[0] is the same model as devs[0]
     dev, test_seen, test_unseen = {}, {}, {}
-    dev_probas, test_probas, test_unseen_probas = {}, {}, {}  # Never dynamically add to a pd Dataframe
 
     print('Loading data:')
     for csv in sorted(os.listdir(path)):
@@ -369,29 +368,31 @@ def main(path, gt_path="./data/"):
             print(csv)
             if ("dev" in csv) or ("val" in csv):
                 dev[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
-                #dev_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                # dev_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
             elif "test_unseen" in csv:
                 test_unseen[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
-                #test_unseen_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                # test_unseen_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
             elif "test_seen" in csv:
                 test_seen[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
-                #test_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                # test_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
 
     dev_probas = pd.DataFrame({k: v.proba.values for k, v in dev.items()})
     test_seen_probas = pd.DataFrame({k: v.proba.values for k, v in test_seen.items()})
     test_unseen_probas = pd.DataFrame({k: v.proba.values for k, v in test_unseen.items()})
-
-    #dev_or = dev.copy()
-    #test_or = test.copy()
-    #test_unseen_or = test_unseen.copy()
+    print(dev_probas)
+    # dev_or = dev.copy()
+    # TODO
+    # test_or = test.copy()
+    # test_unseen_or = test_unseen.copy()
 
     if len(dev_df) > len(dev_probas):
         print("Your predictions do not include the full dev!")
-        dev_df = dev[0][["id"]].merge(dev_df, how="left", on="id")                                                      # TODO
+        dev_df = dev[0][["id"]].merge(dev_df, how="left", on="id")  # TODO
 
     loop, last_score, delta = 0, 0, 0.1
 
-    while (delta > 0.0001):
+    while delta > 0.0001:
+
         # Individual AUROCs
         print('\n' + '-' * 21 + 'ROUND ' + str(loop) + '-' * 21)
         print("Individual AUROCs for Validation Sets:\n")
@@ -399,46 +400,15 @@ def main(path, gt_path="./data/"):
             score = roc_auc_score(dev_df.label, dev_probas.iloc[:, i])
             print(column, score)
 
-        scores = dev_probas.apply(lambda col: roc_auc_score(dev_df.label, col), result_type='reduce')
-        print(scores)
-
-        # Sequentially drop worst performing sets
+        # Drop worst performing sets
         if loop > 0:
             print('\n' + '-' * 50)
             scores = dev_probas.apply(lambda col: roc_auc_score(dev_df.label, col), result_type='reduce')
-            print(scores)
             while len(dev) > 5:
-                lowest_score = 1
-                drop = 0
-                for i, column in enumerate(dev_probas):
-                    score = roc_auc_score(dev_df.label, dev_probas.iloc[:, i])
-                    if score < lowest_score:
-                        lowest_score = score
-                        col = column
-                        drop = i
-
-                column_numbers = [x for x in range(dev_probas.shape[1])]  # list of columns' integer indices
-                column_numbers.remove(drop)
-                dev_probas = dev_probas.iloc[:, column_numbers]
-
-                column_numbers = [x for x in range(test_probas.shape[1])]  # list of columns' integer indices
-                column_numbers.remove(drop)
-                test_probas = test_probas.iloc[:, column_numbers]
-
-                column_numbers = [x for x in range(test_unseen_probas.shape[1])]  # list of columns' integer indices
-                column_numbers.remove(drop)
-                test_unseen_probas = test_unseen_probas.iloc[:, column_numbers]
-
-                if i < len(dev_or):
-                    dev_or.pop(drop)
-                    test_or.pop(drop)
-                    test_unseen_or.pop(drop)
-                if i < len(dev):
-                    dev.pop(drop)
-                    test.pop(drop)
-                    test_unseen.pop(drop)
-
-                print("Dropped:", col)
+                worst = scores.idxmin()
+                del dev[worst]
+                dev_probas.drop(worst)
+                print("Dropped:", worst)
 
         # Spearman Correlations:
         print('\n' + '-' * 50)
@@ -452,15 +422,15 @@ def main(path, gt_path="./data/"):
         print('\n', test_unseen_corr)
         print('\n' + '-' * 50)
 
-        ### SIMPLE AVERAGE ###
+        # Simple Average
         print('Simple Average:')
         dev_SA = simple_average(dev_probas, dev[0], power=1, normalize=True)
-        test_seen_SA = simple_average(test_probas, test_seen[0], power=1, normalize=True)
+        test_seen_SA = simple_average(test_seen_probas, test_seen[0], power=1, normalize=True)
         test_unseen_SA = simple_average(test_unseen_probas, test_unseen[0], power=1, normalize=True)
         print(roc_auc_score(dev_df.label, dev_SA.proba), accuracy_score(dev_df.label, dev_SA.label))
         print('\n' + '-' * 50)
 
-        ### POWER AVERAGE ###
+        # Power Average
         print('Power Average:')
         dev_PA = simple_average(dev_probas, dev[0], power=2, normalize=True)
         test_PA = simple_average(test_probas, test[0], power=2, normalize=True)
@@ -468,7 +438,7 @@ def main(path, gt_path="./data/"):
         print(roc_auc_score(dev_df.label, dev_PA.proba), accuracy_score(dev_df.label, dev_PA.label))
         print('\n' + '-' * 50)
 
-        ### RANK AVERAGE ###
+        # Rank Average
         print('Rank Average:')
         dev_RA = rank_average(dev)
         test_seen_RA = rank_average(test_seen)
@@ -476,7 +446,7 @@ def main(path, gt_path="./data/"):
         print(roc_auc_score(dev_df.label, dev_RA.proba), accuracy_score(dev_df.label, dev_RA.label))
         print('\n' + '-' * 50)
 
-        ### SIMPLEX ###
+        # Simple
         print('Simple:')
         weights_dev = Simplex(dev_probas, dev_df.label)
         dev_SX = simple_average(dev_probas, dev[0], weights_dev)
@@ -515,7 +485,8 @@ def main(path, gt_path="./data/"):
     # As Simplex at some point simply weighs the highest of all - lets take sx as the final prediction after x loops
     dev_SX.to_csv(os.path.join(path, "final/FIN_dev_seen_" + args.exp + "_" + str(loop) + ".csv"), index=False)
     test_SX.to_csv(os.path.join(path, "final/FIN_test_seen_" + args.exp + "_" + str(loop) + ".csv"), index=False)
-    test_unseen_SX.to_csv(os.path.join(path, "final/FIN_test_unseen_" + args.exp + "_" + str(loop) + ".csv"), index=False)
+    test_unseen_SX.to_csv(os.path.join(path, "final/FIN_test_unseen_" + args.exp + "_" + str(loop) + ".csv"),
+                          index=False)
 
     print("Finished.")
 
