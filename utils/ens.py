@@ -487,7 +487,6 @@ def main(path, gt_path="./data/"):
         dev = dev_or + [dev_SA, dev_PA, dev_RA, dev_SX]
         test = test_or + [test_SA, test_PA, test_RA, test_SX]
         test_unseen = test_unseen_or + [test_unseen_SA, test_unseen_PA, test_unseen_RA, test_unseen_SX]
-        dev_probas[]
         dev_probas = pd.concat([df.proba for df in dev], axis=1)
         test_probas = pd.concat([df.proba for df in test], axis=1)
         test_unseen_probas = pd.concat([df.proba for df in test_unseen], axis=1)
