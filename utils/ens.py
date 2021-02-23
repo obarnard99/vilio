@@ -370,18 +370,19 @@ def main(path, gt_path="./data/"):
     dev, test, test_unseen = [], [], []
     dev_probas, test_probas, test_unseen_probas = {}, {}, {}  # Never dynamically add to a pd Dataframe
 
+    print('Loading data:')
     for csv in sorted(os.listdir(path)):
         print(csv)
         if ".csv" in csv:
             if ("dev" in csv) or ("val" in csv):
                 dev.append(pd.read_csv(os.path.join(path, csv)))
-                dev_probas[csv[:-8]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                dev_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
             elif "test_unseen" in csv:
                 test_unseen.append(pd.read_csv(os.path.join(path, csv)))
-                test_unseen_probas[csv[:-14]] = pd.read_csv(os.path.join(path, csv)).proba.values
-            elif "test" in csv:
+                test_unseen_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
+            elif "test_seen" in csv:
                 test.append(pd.read_csv(os.path.join(path, csv)))
-                test_probas[csv[:-7]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                test_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
 
     dev_probas = pd.DataFrame(dev_probas)
     test_probas = pd.DataFrame(test_probas)
@@ -398,18 +399,16 @@ def main(path, gt_path="./data/"):
     loop, last_score, delta = 0, 0, 0.1
 
     while (delta > 0.0001):
-
         # Individual Roc Aucs
-        print("Individual RCs:\n")
-        print("dev")
-
+        print('\n' + '-' * 50)
+        print("Individual AUROCs for Validation Sets:")
         for i, column in enumerate(dev_probas):
             score = roc_auc_score(dev_df.label, dev_probas.iloc[:, i])
             print(column, score)
 
-        print('-' * 50)
-
+        # Sequentially drop worst performing sets
         if loop > 0:
+            print('\n' + '-' * 50)
             while len(dev) > 5:
                 lowest_score = 1
                 drop = 0
@@ -443,40 +442,41 @@ def main(path, gt_path="./data/"):
 
                 print("Dropped:", col)
 
-        # Spearman Correlations: 
+        # Spearman Correlations:
+        print('\n' + '-' * 50)
         print("Spearman Corrs:")
         dev_corr = dev_probas.corr(method='spearman')
         test_corr = test_probas.corr(method='spearman')
         test_unseen_corr = test_unseen_probas.corr(method='spearman')
 
-        print(dev_corr, '\n')
-        print(test_corr)
-        print(test_unseen_corr)
-        print('-' * 50)
+        print('\n', dev_corr)
+        print('\n', test_corr)
+        print('\n', test_unseen_corr)
+        print('\n' + '-' * 50)
 
         ### SIMPLE AVERAGE ###
+        print('Simple Average:')
         dev_SA = simple_average(dev_probas, dev[0], power=1, normalize=True)
         test_SA = simple_average(test_probas, test[0], power=1, normalize=True)
         test_unseen_SA = simple_average(test_unseen_probas, test_unseen[0], power=1, normalize=True)
-
         print(roc_auc_score(dev_df.label, dev_SA.proba), accuracy_score(dev_df.label, dev_SA.label))
-        print('-' * 50)
+        print('\n' + '-' * 50)
 
         ### POWER AVERAGE ###
+        print('Power Average:')
         dev_PA = simple_average(dev_probas, dev[0], power=2, normalize=True)
         test_PA = simple_average(test_probas, test[0], power=2, normalize=True)
         test_unseen_PA = simple_average(test_unseen_probas, test_unseen[0], power=2, normalize=True)
-
         print(roc_auc_score(dev_df.label, dev_PA.proba), accuracy_score(dev_df.label, dev_PA.label))
-        print('-' * 50)
+        print('\n' + '-' * 50)
 
         ### RANK AVERAGE ###
+        print('Rank Average:')
         dev_RA = rank_average(dev)
         test_RA = rank_average(test)
         test_unseen_RA = rank_average(test_unseen)
-
         print(roc_auc_score(dev_df.label, dev_RA.proba), accuracy_score(dev_df.label, dev_RA.label))
-        print('-' * 50)
+        print('\n' + '-' * 50)
 
         ### SIMPLEX ###
         weights_dev = Simplex(dev_probas, dev_df.label)
