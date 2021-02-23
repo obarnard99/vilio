@@ -399,6 +399,9 @@ def main(path, gt_path="./data/"):
             score = roc_auc_score(dev_df.label, dev_probas.iloc[:, i])
             print(column, score)
 
+        scores = dev_probas.apply(lambda col: roc_auc_score(dev_df.label, col), result_type='reduce')
+        print(scores)
+
         # Sequentially drop worst performing sets
         if loop > 0:
             print('\n' + '-' * 50)
@@ -441,18 +444,18 @@ def main(path, gt_path="./data/"):
         print('\n' + '-' * 50)
         print("Spearman Corrs:")
         dev_corr = dev_probas.corr(method='spearman')
-        test_corr = test_probas.corr(method='spearman')
+        test_seen_corr = test_seen_probas.corr(method='spearman')
         test_unseen_corr = test_unseen_probas.corr(method='spearman')
 
         print('\n', dev_corr)
-        print('\n', test_corr)
+        print('\n', test_seen_corr)
         print('\n', test_unseen_corr)
         print('\n' + '-' * 50)
 
         ### SIMPLE AVERAGE ###
         print('Simple Average:')
         dev_SA = simple_average(dev_probas, dev[0], power=1, normalize=True)
-        test_SA = simple_average(test_probas, test[0], power=1, normalize=True)
+        test_seen_SA = simple_average(test_probas, test_seen[0], power=1, normalize=True)
         test_unseen_SA = simple_average(test_unseen_probas, test_unseen[0], power=1, normalize=True)
         print(roc_auc_score(dev_df.label, dev_SA.proba), accuracy_score(dev_df.label, dev_SA.label))
         print('\n' + '-' * 50)
@@ -468,7 +471,7 @@ def main(path, gt_path="./data/"):
         ### RANK AVERAGE ###
         print('Rank Average:')
         dev_RA = rank_average(dev)
-        test_RA = rank_average(test)
+        test_seen_RA = rank_average(test_seen)
         test_unseen_RA = rank_average(test_unseen)
         print(roc_auc_score(dev_df.label, dev_RA.proba), accuracy_score(dev_df.label, dev_RA.label))
         print('\n' + '-' * 50)
@@ -477,7 +480,7 @@ def main(path, gt_path="./data/"):
         print('Simple:')
         weights_dev = Simplex(dev_probas, dev_df.label)
         dev_SX = simple_average(dev_probas, dev[0], weights_dev)
-        test_SX = simple_average(test_probas, test[0], weights_dev)
+        test_seen_SX = simple_average(test_probas, test_seen[0], weights_dev)
         test_unseen_SX = simple_average(test_unseen_probas, test_unseen[0], weights_dev)
         print(roc_auc_score(dev_df.label, dev_SX.proba), accuracy_score(dev_df.label, dev_SX.label))
         print('\n' + '-' * 50)
