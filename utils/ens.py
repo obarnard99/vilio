@@ -1,15 +1,14 @@
-import pandas as pd
-import numpy as np
-import os
-
-from sklearn.metrics import roc_auc_score, accuracy_score
-from sklearn import metrics
-
-from scipy.stats import rankdata
-
-import math
-
 import argparse
+import math
+import os
+from heapq import heappush, heappop, heappushpop
+
+import matplotlib.pyplot as plotter
+import numpy as np
+import pandas as pd
+from scipy.stats import rankdata
+from sklearn import metrics
+from sklearn.metrics import roc_auc_score, accuracy_score
 
 
 def parse_args():
@@ -104,12 +103,6 @@ def rank_average(subs, weights=None):
 # Taken & adapted from:
 # https://github.com/chrisstroemel/Simple
 
-from heapq import heappush, heappop, heappushpop
-import numpy
-import math
-import time
-import matplotlib.pyplot as plotter
-
 CAPACITY_INCREMENT = 1000
 
 
@@ -141,7 +134,7 @@ class SimpleTuner:
         self.__numberOfVertices = len(cornerPoints)
         self.queue = []
         self.capacity = self.__numberOfVertices + CAPACITY_INCREMENT
-        self.testPoints = numpy.empty((self.capacity, self.__numberOfVertices))
+        self.testPoints = np.empty((self.capacity, self.__numberOfVertices))
         self.objective = objectiveFunction
         self.iterations = 0
         self.maxValue = None
@@ -165,10 +158,10 @@ class SimpleTuner:
             else:
                 testPoint = self.__cornerPoints[self.iterations]
                 testPoint.append(0)
-                testPoint = numpy.array(testPoint, dtype=numpy.float64)
+                testPoint = np.array(testPoint, dtype=np.float64)
                 self.__testCoords(testPoint)
                 if self.iterations == (self.__numberOfVertices - 1):
-                    initialSimplex = self.__makeSimplex(numpy.arange(self.__numberOfVertices, dtype=numpy.intp), 1)
+                    initialSimplex = self.__makeSimplex(np.arange(self.__numberOfVertices, dtype=np.intp), 1)
                     heappush(self.queue, initialSimplex)
             self.iterations += 1
 
@@ -204,11 +197,11 @@ class SimpleTuner:
     def __makeSimplex(self, pointIndices, contentFraction):
         vertexMatrix = self.testPoints[pointIndices]
         coordMatrix = vertexMatrix[:, 0:-1]
-        barycenterLocation = numpy.sum(vertexMatrix, axis=0) / self.__numberOfVertices
+        barycenterLocation = np.sum(vertexMatrix, axis=0) / self.__numberOfVertices
 
         differences = coordMatrix - barycenterLocation[0:-1]
-        distances = numpy.sqrt(numpy.sum(differences * differences, axis=1))
-        totalDistance = numpy.sum(distances)
+        distances = np.sqrt(np.sum(differences * differences, axis=1))
+        totalDistance = np.sum(distances)
         barycentricTestCoords = distances / totalDistance
 
         euclideanTestCoords = vertexMatrix.T.dot(barycentricTestCoords)
@@ -216,10 +209,10 @@ class SimpleTuner:
         vertexValues = vertexMatrix[:, -1]
 
         testpointDifferences = coordMatrix - euclideanTestCoords[0:-1]
-        testPointDistances = numpy.sqrt(numpy.sum(testpointDifferences * testpointDifferences, axis=1))
+        testPointDistances = np.sqrt(np.sum(testpointDifferences * testpointDifferences, axis=1))
 
         inverseDistances = 1 / testPointDistances
-        inverseSum = numpy.sum(inverseDistances)
+        inverseSum = np.sum(inverseDistances)
         interpolatedValue = inverseDistances.dot(vertexValues) / inverseSum
 
         currentDifference = self.maxValue - self.minValue
@@ -372,8 +365,8 @@ def main(path, gt_path="./data/"):
 
     print('Loading data:')
     for csv in sorted(os.listdir(path)):
-        print(csv)
         if ".csv" in csv:
+            print(csv)
             if ("dev" in csv) or ("val" in csv):
                 dev.append(pd.read_csv(os.path.join(path, csv)))
                 dev_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
@@ -400,8 +393,8 @@ def main(path, gt_path="./data/"):
 
     while (delta > 0.0001):
         # Individual Roc Aucs
-        print('\n' + '-' * 50)
-        print("Individual AUROCs for Validation Sets:")
+        print('\n' + '-' * 21 + 'ROUND ' + str(loop+1) + '-' * 21)
+        print("Individual AUROCs for Validation Sets:\n")
         for i, column in enumerate(dev_probas):
             score = roc_auc_score(dev_df.label, dev_probas.iloc[:, i])
             print(column, score)
@@ -479,17 +472,17 @@ def main(path, gt_path="./data/"):
         print('\n' + '-' * 50)
 
         ### SIMPLEX ###
+        print('Simple:')
         weights_dev = Simplex(dev_probas, dev_df.label)
-
         dev_SX = simple_average(dev_probas, dev[0], weights_dev)
         test_SX = simple_average(test_probas, test[0], weights_dev)
         test_unseen_SX = simple_average(test_unseen_probas, test_unseen[0], weights_dev)
-
         print(roc_auc_score(dev_df.label, dev_SX.proba), accuracy_score(dev_df.label, dev_SX.label))
-        print('-' * 50)
+        print('\n' + '-' * 50)
 
         # Prepare Next Round
         dev = dev_or + [dev_SA, dev_PA, dev_RA, dev_SX]
+        print(dev_SA)
         test = test_or + [test_SA, test_PA, test_RA, test_SX]
         test_unseen = test_unseen_or + [test_unseen_SA, test_unseen_PA, test_unseen_RA, test_unseen_SX]
 
