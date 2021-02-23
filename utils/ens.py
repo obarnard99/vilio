@@ -360,7 +360,7 @@ def main(path, gt_path="./data/"):
     dev_df = pd.read_json(os.path.join(gt_path, 'dev_seen.jsonl'), lines=True)
 
     # Make sure the lists will be ordered, i.e. test[0] is the same model as devs[0]
-    dev, test, test_unseen = [], [], []
+    dev, test_seen, test_unseen = {}, {}, {}
     dev_probas, test_probas, test_unseen_probas = {}, {}, {}  # Never dynamically add to a pd Dataframe
 
     print('Loading data:')
@@ -368,18 +368,21 @@ def main(path, gt_path="./data/"):
         if ".csv" in csv:
             print(csv)
             if ("dev" in csv) or ("val" in csv):
-                dev.append(pd.read_csv(os.path.join(path, csv)))
-                dev_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                dev[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
+                #dev_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
             elif "test_unseen" in csv:
-                test_unseen.append(pd.read_csv(os.path.join(path, csv)))
-                test_unseen_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                test_unseen[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
+                #test_unseen_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
             elif "test_seen" in csv:
-                test.append(pd.read_csv(os.path.join(path, csv)))
-                test_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                test_seen[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
+                #test_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
 
-    dev_probas = pd.DataFrame(dev_probas)
-    test_probas = pd.DataFrame(test_probas)
-    test_unseen_probas = pd.DataFrame(test_unseen_probas)
+    dev = pd.DataFrame(dev)
+    test_seen = pd.DataFrame(test_seen)
+    test_unseen = pd.DataFrame(test_unseen)
+
+    dev_probas = dev.apply(lambda df: df.proba.values)
+    print(dev_probas)
 
     dev_or = dev.copy()
     test_or = test.copy()
@@ -387,13 +390,13 @@ def main(path, gt_path="./data/"):
 
     if len(dev_df) > len(dev_probas):
         print("Your predictions do not include the full dev!")
-        dev_df = dev[0][["id"]].merge(dev_df, how="left", on="id")
+        dev_df = dev[0][["id"]].merge(dev_df, how="left", on="id")                                                      # TODO
 
     loop, last_score, delta = 0, 0, 0.1
 
     while (delta > 0.0001):
         # Individual Roc Aucs
-        print('\n' + '-' * 21 + 'ROUND ' + str(loop+1) + '-' * 21)
+        print('\n' + '-' * 21 + 'ROUND ' + str(loop) + '-' * 21)
         print("Individual AUROCs for Validation Sets:\n")
         for i, column in enumerate(dev_probas):
             score = roc_auc_score(dev_df.label, dev_probas.iloc[:, i])
@@ -484,7 +487,7 @@ def main(path, gt_path="./data/"):
         dev = dev_or + [dev_SA, dev_PA, dev_RA, dev_SX]
         test = test_or + [test_SA, test_PA, test_RA, test_SX]
         test_unseen = test_unseen_or + [test_unseen_SA, test_unseen_PA, test_unseen_RA, test_unseen_SX]
-        print(dev_probas)
+        dev_probas[]
         dev_probas = pd.concat([df.proba for df in dev], axis=1)
         test_probas = pd.concat([df.proba for df in test], axis=1)
         test_unseen_probas = pd.concat([df.proba for df in test_unseen], axis=1)
