@@ -377,18 +377,13 @@ def main(path, gt_path="./data/"):
                 test_seen[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
                 #test_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
 
-    print(dev)
-    dev = pd.DataFrame(dev, index=[0, 1, 2])
-    print(dev)
-    test_seen = pd.DataFrame(test_seen, index=[0])
-    test_unseen = pd.DataFrame(test_unseen, index=[0])
+    dev_probas = pd.DataFrame({k: v.proba.values for k, v in dev.items()})
+    test_seen_probas = pd.DataFrame({k: v.proba.values for k, v in test_seen.items()})
+    test_unseen_probas = pd.DataFrame({k: v.proba.values for k, v in test_unseen.items()})
 
-    dev_probas = dev.apply(lambda df: df.proba.values)
-    print(dev_probas)
-
-    dev_or = dev.copy()
-    test_or = test.copy()
-    test_unseen_or = test_unseen.copy()
+    #dev_or = dev.copy()
+    #test_or = test.copy()
+    #test_unseen_or = test_unseen.copy()
 
     if len(dev_df) > len(dev_probas):
         print("Your predictions do not include the full dev!")
@@ -397,7 +392,7 @@ def main(path, gt_path="./data/"):
     loop, last_score, delta = 0, 0, 0.1
 
     while (delta > 0.0001):
-        # Individual Roc Aucs
+        # Individual AUROCs
         print('\n' + '-' * 21 + 'ROUND ' + str(loop) + '-' * 21)
         print("Individual AUROCs for Validation Sets:\n")
         for i, column in enumerate(dev_probas):
@@ -407,6 +402,8 @@ def main(path, gt_path="./data/"):
         # Sequentially drop worst performing sets
         if loop > 0:
             print('\n' + '-' * 50)
+            scores = dev_probas.apply(lambda col: roc_auc_score(dev_df.label, col), result_type='reduce')
+            print(scores)
             while len(dev) > 5:
                 lowest_score = 1
                 drop = 0
