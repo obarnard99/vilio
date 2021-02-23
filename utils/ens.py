@@ -377,7 +377,9 @@ def main(path, gt_path="./data/"):
                 test_seen[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
                 #test_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
 
-    dev = pd.DataFrame(dev, index=[0])
+    print(dev)
+    dev = pd.DataFrame(dev, index=[0, 1, 2])
+    print(dev)
     test_seen = pd.DataFrame(test_seen, index=[0])
     test_unseen = pd.DataFrame(test_unseen, index=[0])
 
