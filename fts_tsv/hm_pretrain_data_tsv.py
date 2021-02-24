@@ -45,7 +45,7 @@ FIELDNAMES = ["img_id", "img_h", "img_w", "objects_id", "objects_conf",
               "attrs_id", "attrs_conf", "num_boxes", "boxes", "features"]
 """
 class LXMERTTorchDataset(Dataset):
-    def __init__(self, splits="train",  topk=-1):
+    def __init__(self, splits="train", feature_path="data/HM_img.tsv"):
         super().__init__()
         self.name = splits
         self.splits = splits.split(",")
@@ -65,9 +65,7 @@ class LXMERTTorchDataset(Dataset):
         self.id2datum = {datum["id"]: datum for datum in self.raw_data}
 
         img_data = []
-
-        path = "data/HM_img.tsv"
-        img_data.extend(load_obj_tsv(path, self.id2datum.keys()))
+        img_data.extend(load_obj_tsv(feature_path, self.id2datum.keys()))
 
         # Convert img list to dict
         self.imgid2img = {}

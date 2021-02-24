@@ -44,7 +44,7 @@ def make_uid(img_id, dset, sent_idx):
 
 
 class LXMERTTorchDataset(Dataset):
-    def __init__(self, splits="train",  topk=-1):
+    def __init__(self, splits="train", feature_path="./data"):
         super().__init__()
         self.name = splits
         self.splits = splits.split(",")
@@ -62,12 +62,12 @@ class LXMERTTorchDataset(Dataset):
 
         # List to dict (for evaluation and others)
         self.id2datum = {datum["id"]: datum for datum in self.data}
-        path = "data/features/"
-        path2 = "data/detectron.lmdb"
+        feature_path = os.path.join(feature_path, "features")
+        feature_db_path = os.path.join(feature_path, "detectron.lmdb")
         self.db = FeaturesDatabase(
-                path=path2,
-                annotation_db=None,
-                feature_path=path)
+            path=feature_db_path,
+            annotation_db=None,
+            feature_path=feature_path)
 
         # No idea why, but for fbmdata final image gets extracted twice causing an error (ID: 81054)
         for o in os.listdir(path):

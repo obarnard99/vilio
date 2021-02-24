@@ -31,7 +31,7 @@ def get_tuple(splits: str, bs: int, shuffle=False, drop_last=False, topk=-1) -> 
 
     # Build dataset, data loader, and evaluator.
     dset = LXMERTDataset(splits)
-    tset = LXMERTTorchDataset(splits) # Remove topk
+    tset = LXMERTTorchDataset(splits, feature_path=args.features) # Remove topk
     data_loader = DataLoader(
         tset, batch_size=bs,
         shuffle=shuffle, num_workers=args.num_workers,
