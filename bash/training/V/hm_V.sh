@@ -4,7 +4,7 @@
 topk=${1:--1}
 
 # Extract lmdb features
-python fts_lmdb/lmdb_conversion.py
+# python fts_lmdb/lmdb_conversion.py
 
 # Seed 45
 python pretrain_bertV.py \
@@ -16,6 +16,7 @@ python pretrain_bertV.py \
            --lr 0.5e-5 \
            --epochs 8 \
            --num_features 100 \
+           --features ./data/features/lmdb \
            --loadpre ./data/model.pth \
            --topk $topk
 
@@ -31,6 +32,7 @@ python hm.py \
            --epochs 5 \
            --reg \
            --num_features 100 \
+           --features ./data/features/lmdb \
            --loadpre ./data/LAST_BV.pth \
            --swa \
            --exp V45 \
@@ -47,6 +49,7 @@ python hm.py \
            --tr bert-base-uncased \
            --epochs 5 --reg \
            --num_features 100 \
+           --features ./data/features/lmdb \
            --loadpre ./data/LAST_BV.pth \
            --swa \
            --exp V45 \
@@ -62,6 +65,7 @@ python pretrain_bertV.py \
            --lr 0.5e-5 \
            --epochs 8 \
            --num_features 100 \
+           --features ./data/features/lmdb \
            --loadpre ./data/model.pth \
            --topk $topk
 
@@ -77,6 +81,7 @@ python hm.py \
            --epochs 5 \
            --reg \
            --num_features 100 \
+           --features ./data/features/lmdb \
            --loadpre ./data/LAST_BV.pth \
            --swa \
            --exp V90 \
@@ -94,6 +99,7 @@ python hm.py \
            --epochs 5 \
            --reg \
            --num_features 100 \
+           --features ./data/features/lmdb \
            --loadpre ./data/LAST_BV.pth \
            --swa \
            --exp V90 \
@@ -110,6 +116,7 @@ python pretrain_bertV.py \
            --lr 0.5e-5 \
            --epochs 8 \
            --num_features 100 \
+           --features ./data/features/lmdb \
            --loadpre ./data/model.pth \
            --topk $topk
 
@@ -125,6 +132,7 @@ python hm.py \
            --epochs 5 \
            --reg \
            --num_features 100 \
+           --features ./data/features/lmdb \
            --loadpre ./data/LAST_BV.pth \
            --swa \
            --exp V135 \
@@ -142,6 +150,7 @@ python hm.py \
            --epochs 5 \
            --reg \
            --num_features 100 \
+           --features ./data/features/lmdb \
            --loadpre ./data/LAST_BV.pth \
            --swa \
            --exp V135 \
