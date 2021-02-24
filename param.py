@@ -17,6 +17,7 @@ def parse_args():
     parser.add_argument("--tsv", action='store_const', default=False, const=True, help='Whether to use tsv extraction (else lmdb)')
     parser.add_argument("--num_features", type=int, default=100, help='How many features we have per img (e.g. 100, 80)')
     parser.add_argument("--num_pos", type=int, default=4, help='How many position feats - 4 or 6')
+    parser.add_argument("--features", type=str, default=None, help='Location of input features (either tsv file or dir with lmdb)')
 
     # Training Hyper-parameters
     parser.add_argument('--batchSize', dest='batch_size', type=int, default=8)

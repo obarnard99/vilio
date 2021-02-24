@@ -23,7 +23,7 @@ class HMDataset(Dataset):
 
 
 class HMTorchDataset(Dataset):
-    def __init__(self, splits):
+    def __init__(self, splits, feature_path="./data"):
         super().__init__()
         self.name = splits
         self.splits = splits.split(",")
@@ -31,27 +31,27 @@ class HMTorchDataset(Dataset):
         # Loading datasets to data
         self.data = []
         for split in self.splits:
-            path = os.path.join("data/", f"{split}.jsonl")
+            path = os.path.join("./data/", f"{split}.jsonl")
             self.data.extend(
-                    [json.loads(jline) for jline in open(path, "r").read().split('\n') if jline != ""]
+                [json.loads(jline) for jline in open(path, "r").read().split('\n') if jline != ""]
             )
         print("Load %d data from split(s) %s." % (len(self.data), self.name))
 
         # List to dict (for evaluation and others)
         self.id2datum = {datum["id"]: datum for datum in self.data}
 
-        path = "data/features/"
-        path2 = "data/detectron.lmdb"
+        feature_path = os.path.join(feature_path, "features")
+        feature_db_path = os.path.join(feature_path, "detectron.lmdb")
 
         self.db = FeaturesDatabase(
-                path=path2,
-                annotation_db=None,
-                feature_path=path)
+            path=feature_db_path,
+            annotation_db=None,
+            feature_path=feature_path)
 
         # No idea why, but for hmdatafinal oneimage gets extracted twice causing an error (ID: 81054)
-        for o in os.listdir(path):
+        for o in os.listdir(feature_path):
             if "(1)" in o:
-                os.remove(path + o) 
+                os.remove(os.path.join(feature_path, o))
 
         self.id2file = {int(o.split("_")[0].split(".")[0]): o for o in os.listdir(path)}
 
@@ -89,18 +89,19 @@ class HMTorchDataset(Dataset):
         assert len(boxes) == len(feats)
 
         # Normalize the boxes (to 0 ~ 1)
-        #boxes = boxes.clone()
-        #boxes[:, (0, 2)] /= img_w
-        #boxes[:, (1, 3)] /= img_h
-        #np.testing.assert_array_less(boxes, 1 + 1e-5)
-        #np.testing.assert_array_less(-boxes, 0 + 1e-5)
+        # boxes = boxes.clone()
+        # boxes[:, (0, 2)] /= img_w
+        # boxes[:, (1, 3)] /= img_h
+        # np.testing.assert_array_less(boxes, 1 + 1e-5)
+        # np.testing.assert_array_less(-boxes, 0 + 1e-5)
 
         # Create target
         if "label" in datum:
-            target = torch.tensor(datum["label"], dtype=torch.float) 
+            target = torch.tensor(datum["label"], dtype=torch.float)
             return iid, feats, boxes, text, target
         else:
             return iid, feats, boxes, text
+
 
 class HMEvaluator:
     def __init__(self, dataset):
@@ -115,7 +116,7 @@ class HMEvaluator:
             if ans == label:
                 score += 1
             total += 1
- 
+
         return score / total
 
     def dump_json(self, id2ans: dict, path):
@@ -128,15 +129,15 @@ class HMEvaluator:
 
     def dump_csv(self, id2ans: dict, id2prob: dict, path):
 
-        d = {"id": [int(tensor) for tensor in id2ans.keys()], "proba": list(id2prob.values()), 
-            "label": list(id2ans.values())}
+        d = {"id": [int(tensor) for tensor in id2ans.keys()], "proba": list(id2prob.values()),
+             "label": list(id2ans.values())}
         results = pd.DataFrame(data=d)
-        
+
         print(results.info())
 
         results.to_csv(path_or_buf=path, index=False)
 
-    def roc_auc(self, id2ans:dict):
+    def roc_auc(self, id2ans: dict):
         """Calculates roc_auc score"""
         ans = list(id2ans.values())
         label = [self.dataset.id2datum[int(key)]["label"] for key in id2ans.keys()]

@@ -1,14 +1,12 @@
 import collections
 import os
 
-from param import args
-
-import numpy as np
-
-from tqdm import tqdm
 import torch
 import torch.nn as nn
 from torch.utils.data.dataloader import DataLoader
+from tqdm import tqdm
+
+from param import args
 
 if args.tsv:
     from fts_tsv.hm_data_tsv import HMTorchDataset, HMEvaluator, HMDataset
@@ -27,20 +25,17 @@ from entryO import ModelO
 # Two different SWA Methods - https://pytorch.org/blog/pytorch-1.6-now-includes-stochastic-weight-averaging/
 if args.swa:
     from torch.optim.swa_utils import AveragedModel, SWALR
-    from torch.optim.lr_scheduler import CosineAnnealingLR
 
 if args.contrib:
     from torchcontrib.optim import SWA
 
-
 # Largely sticking to standards set in LXMERT here
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
 
-def get_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataTuple:
 
-    dset =  HMDataset(splits)
-
-    tset = HMTorchDataset(splits)
+def get_tuple(splits: str, bs: int, shuffle=False, drop_last=False) -> DataTuple:
+    dset = HMDataset(splits)
+    tset = HMTorchDataset(splits, feature_path=args.features)
     evaluator = HMEvaluator(tset)
     data_loader = DataLoader(
         tset, batch_size=bs,
@@ -50,9 +45,10 @@ def get_tuple(splits: str, bs:int, shuffle=False, drop_last=False) -> DataTuple:
 
     return DataTuple(dataset=dset, loader=data_loader, evaluator=evaluator)
 
+
 class HM:
     def __init__(self):
-        
+
         if args.train is not None:
             self.train_tuple = get_tuple(
                 args.train, bs=args.batch_size, shuffle=True, drop_last=False
@@ -127,13 +123,13 @@ class HM:
             optimizer_grouped_parameters = [
                 {'params': [p for n, p in params if not any(nd in n for nd in no_decay)], 'weight_decay': args.wd},
                 {'params': [p for n, p in params if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
-                ]
+            ]
 
             self.optim = AdamW(optimizer_grouped_parameters, lr=args.lr)
 
         if args.train is not None:
             self.scheduler = get_linear_schedule_with_warmup(self.optim, self.t_total * 0.1, self.t_total)
-        
+
         self.output = args.output
         os.makedirs(self.output, exist_ok=True)
 
@@ -141,7 +137,7 @@ class HM:
         if args.contrib:
             self.optim = SWA(self.optim, swa_start=self.t_total * 0.75, swa_freq=5, swa_lr=args.lr)
 
-        if args.swa: 
+        if args.swa:
             self.swa_model = AveragedModel(self.model)
             self.swa_start = self.t_total * 0.75
             self.swa_scheduler = SWALR(self.optim, swa_lr=args.lr)
@@ -157,11 +153,11 @@ class HM:
 
         best_roc = 0.
         ups = 0
-        
+
         total_loss = 0.
 
         for epoch in range(args.epochs):
-            
+
             if args.reg:
                 if args.model != "X":
                     print(self.model.model.layer_weights)
@@ -178,7 +174,7 @@ class HM:
 
                 if args.swa:
                     self.swa_model.train()
-                
+
                 feats, boxes, target = feats.cuda(), boxes.cuda(), target.long().cuda()
 
                 # Model expects visual feats as tuple of feats & boxes
@@ -192,7 +188,7 @@ class HM:
 
                 if i < 1:
                     print(logit[0, :].detach())
-               
+
                 # Note: This loss is the same as CrossEntropy (We splitted it up in logsoftmax & neg. log likelihood loss)
                 loss = self.nllloss(logit.view(-1, 2), target.view(-1))
 
@@ -212,7 +208,7 @@ class HM:
                 for qid, l in zip(ids, score.detach().cpu().numpy()):
                     id2prob[qid] = l
 
-                if (i+1) % args.acc == 0:
+                if (i + 1) % args.acc == 0:
 
                     nn.utils.clip_grad_norm_(self.model.parameters(), args.clip)
 
@@ -228,10 +224,11 @@ class HM:
                     ups += 1
 
                     # Do Validation in between
-                    if ups % 250 == 0: 
-                        
-                        log_str = "\nEpoch(U) %d(%d): Train AC %0.2f RA %0.4f LOSS %0.4f\n" % (epoch, ups, evaluator.evaluate(id2ans)*100, 
-                        evaluator.roc_auc(id2prob)*100, total_loss)
+                    if ups % 250 == 0:
+
+                        log_str = "\nEpoch(U) %d(%d): Train AC %0.2f RA %0.4f LOSS %0.4f\n" % (
+                        epoch, ups, evaluator.evaluate(id2ans) * 100,
+                        evaluator.roc_auc(id2prob) * 100, total_loss)
 
                         # Set loss back to 0 after printing it
                         total_loss = 0.
@@ -242,12 +239,14 @@ class HM:
                                 best_roc = roc_auc
                                 best_acc = acc
                                 # Only save BEST when no midsave is specified to save space
-                                #if args.midsave < 0:
+                                # if args.midsave < 0:
                                 #    self.save("BEST")
 
-                            log_str += "\nEpoch(U) %d(%d): DEV AC %0.2f RA %0.4f \n" % (epoch, ups, acc*100.,roc_auc*100)
-                            log_str += "Epoch(U) %d(%d): BEST AC %0.2f RA %0.4f \n" % (epoch, ups, best_acc*100., best_roc*100.)
-    
+                            log_str += "\nEpoch(U) %d(%d): DEV AC %0.2f RA %0.4f \n" % (
+                            epoch, ups, acc * 100., roc_auc * 100)
+                            log_str += "Epoch(U) %d(%d): BEST AC %0.2f RA %0.4f \n" % (
+                            epoch, ups, best_acc * 100., best_roc * 100.)
+
                         print(log_str, end='')
 
                         with open(self.output + "/log.log", 'a') as f:
@@ -276,7 +275,7 @@ class HM:
                 self.swa_model.eval()
 
             with torch.no_grad():
-                
+
                 feats, boxes = feats.cuda(), boxes.cuda()
                 logit = self.model(sent, (feats, boxes))
 
@@ -317,14 +316,14 @@ class HM:
     def save(self, name):
         if args.swa:
             torch.save(self.swa_model.state_dict(),
-                    os.path.join(self.output, "%s.pth" % name))
+                       os.path.join(self.output, "%s.pth" % name))
         else:
             torch.save(self.model.state_dict(),
-                    os.path.join(self.output, "%s.pth" % name))
+                       os.path.join(self.output, "%s.pth" % name))
 
     def load(self, path):
         print("Load model from %s" % path)
-            
+
         state_dict = torch.load("%s" % path)
         new_state_dict = {}
         for key, value in state_dict.items():
@@ -339,6 +338,7 @@ class HM:
                 new_state_dict[key] = value
         state_dict = new_state_dict
         self.model.load_state_dict(state_dict)
+
 
 def main():
     # Build Class
@@ -368,14 +368,14 @@ def main():
             if 'test' in split:
                 hm.predict(
                     get_tuple(split, bs=args.batch_size,
-                            shuffle=False, drop_last=False),
+                              shuffle=False, drop_last=False),
                     dump=os.path.join(args.output, '{}_{}.csv'.format(args.exp, split))
                 )
             # Anything else that has labels:
             elif 'dev' in split or 'valid' in split or 'train' in split:
                 result = hm.evaluate(
                     get_tuple(split, bs=args.batch_size,
-                            shuffle=False, drop_last=False),
+                              shuffle=False, drop_last=False),
                     dump=os.path.join(args.output, '{}_{}.csv'.format(args.exp, split))
                 )
                 print(result)
@@ -384,9 +384,7 @@ def main():
 
 
 if __name__ == "__main__":
-
     # Create pretrain.jsonl & traindev data
     clean_data("./data")
 
     main()
-

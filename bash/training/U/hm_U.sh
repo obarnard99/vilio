@@ -5,8 +5,6 @@ topk=${1:--1}
 
 
 # 50 Feats, Seed 43
-cp ./data/hm_vgattr5050.tsv ./data/HM_img.tsv
-
 python hm.py \
            --seed 43 \
            --model U \
@@ -19,6 +17,7 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
+           --features ./data/features/tsv/hm_vgattr5050.tsv \
            --loadpre ./data/uniter-large.pt \
            --num_pos 6 \
            --contrib \
@@ -37,6 +36,7 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
+           --features ./data/features/tsv/hm_vgattr5050.tsv \
            --loadpre ./data/uniter-large.pt \
            --num_pos 6 \
            --contrib \
@@ -44,8 +44,6 @@ python hm.py \
            --topk $topk
 
 # 72 Feats, Seed 86
-cp ./data/hm_vgattr7272.tsv ./data/HM_img.tsv
-
 python hm.py \
            --seed 86 \
            --model U \
@@ -58,6 +56,7 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 72 \
+           --features ./data/features/tsv/hm_vgattr7272.tsv \
            --loadpre ./data/uniter-large.pt \
            --num_pos 6 \
            --contrib \
@@ -76,6 +75,7 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 72 \
+           --features ./data/features/tsv/hm_vgattr7272.tsv \
            --loadpre ./data/uniter-large.pt \
            --num_pos 6 \
            --contrib \
@@ -84,8 +84,6 @@ python hm.py \
 
 
 # 36 Feats, Seed 129
-cp ./data/hm_vgattr3636.tsv ./data/HM_img.tsv
-
 python hm.py \
            --seed 129 \
            --model U \
@@ -98,6 +96,7 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 36 \
+           --features ./data/features/tsv/hm_vgattr3636.tsv \
            --loadpre ./data/uniter-large.pt \
            --num_pos 6 \
            --contrib \
@@ -116,6 +115,7 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 36 \
+           --features ./data/features/tsv/hm_vgattr3636.tsv \
            --loadpre ./data/uniter-large.pt \
            --num_pos 6 \
            --contrib \
