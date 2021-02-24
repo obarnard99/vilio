@@ -7,8 +7,7 @@ import matplotlib.pyplot as plotter
 import numpy as np
 import pandas as pd
 from scipy.stats import rankdata
-from sklearn import metrics
-from sklearn.metrics import roc_auc_score, accuracy_score
+from sklearn.metrics import roc_auc_score, roc_curve
 
 
 def parse_args():
@@ -25,77 +24,36 @@ def parse_args():
 
     return args
 
-
-### FUNCTIONS IMPLEMENTING ENSEMBLE METHODS ###
-
 ### HELPERS ###
 
-# Optimizing accuracy based on ROC AUC 
-# Source: https://albertusk95.github.io/posts/2019/12/best-threshold-maximize-accuracy-from-roc-pr-curve/
-# ACC = (TP + TN)/(TP + TN + FP + FN) = (TP + TN) / P + N   (= Correct ones / all)
+# Acc = (TP + TN)/(TP + TN + FP + FN) = (TP + TN) / P + N   (= Correct ones / all)
 # Senstivity / tpr = TP / P 
 # Specificity / tnr = TN / N
 
-def get_acc_and_best_threshold_from_roc_curve(tpr, fpr, thresholds, num_pos_class, num_neg_class):
-    tp = tpr * num_pos_class
-    tn = (1 - fpr) * num_neg_class
-    acc = (tp + tn) / (num_pos_class + num_neg_class)
 
+def acc_from_roc(labels, probas, splits=None):
+    '''Determines the greatest achievable accuracy from the ROC curve.'''
+    if splits is None:
+        splits = (250, 250)
+
+    fpr, tpr, thresholds = roc_curve(labels, probas)
+    tp = tpr * splits[0]
+    tn = (1 - fpr) * splits[1]
+    acc = (tp + tn) / np.sum(splits)
     best_threshold = thresholds[np.argmax(acc)]
 
     return np.amax(acc), best_threshold
 
 
-def set_acc(row, threshold):
-    if row['proba'] >= threshold:
-        val = 1
-    else:
-        val = 0
-    return val
-
-
-### AVERAGES ###
-
-def simple_average(targets, example, weights=None, power=1, normalize=False):
-    """
-    targets: df with target values as columns
-    example: output df example (e.g. including ID - make sure to adjust iloc below if target is not at 1)
-    weights: per submission weights; default is equal weighting 
-    power: optional for power averaging
-    normalize: Whether to normalize targets btw 0 & 1
-    """
+def average(data, weights=None):
+    N = data.shape[1]
     if weights is None:
-        weights = len(targets.columns) * [1.0 / len(targets.columns)]
-    else:
+        weights = [1 / N] * N
+    elif np.sum(weights) != 1.:
         weights = weights / np.sum(weights)
 
-    preds = example.copy()
-    preds.iloc[:, 1] = np.zeros(len(preds))
-
-    if normalize:
-        targets = (targets - targets.min()) / (targets.max() - targets.min())
-    for i in range(len(targets.columns)):
-        preds.iloc[:, 1] = np.add(preds.iloc[:, 1], weights[i] * (targets.iloc[:, i].astype(float) ** power))
-
-    return preds
-
-
-def rank_average(subs, weights=None):
-    """
-    subs: list of submission dataframes with two columns (id, value)
-    weights: per submission weights; default is equal weighting 
-    """
-    if weights is None:
-        weights = len(subs) * [1.0 / len(subs)]
-    else:
-        weights = weights / np.sum(weights)
-    preds = subs[0].copy()
-    preds.iloc[:, 1] = np.zeros(len(subs[0]))
-    for i, sub in enumerate(subs):
-        preds.iloc[:, 1] = np.add(preds.iloc[:, 1], weights[i] * rankdata(sub.iloc[:, 1]) / len(sub))
-
-    return preds
-
+    # Compute weighted avg
+    return data.apply(lambda row: row.multiply(weights).sum(), axis=1)
 
 ### SIMPLEX ###
 
@@ -357,136 +315,144 @@ def main(path, gt_path="./data/"):
     gt_path: Path to folder with ground truth for dev
     """
     # Ground truth
-    dev_df = pd.read_json(os.path.join(gt_path, 'dev_seen.jsonl'), lines=True)
+    gt = pd.read_json(os.path.join(gt_path, 'dev_seen.jsonl'), lines=True)
 
-    # Make sure the lists will be ordered, i.e. test[0] is the same model as devs[0]
-    dev, test_seen, test_unseen = {}, {}, {}
-
+    dev, ts, tu = {}, {}, {}
     print('Loading data:')
     for csv in sorted(os.listdir(path)):
         if ".csv" in csv:
             print(csv)
+            name = csv.split('_')[0]
             if ("dev" in csv) or ("val" in csv):
-                dev[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
-                # dev_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                dev[name] = pd.read_csv(os.path.join(path, csv))
+                dev_idx = dev[name].id.values
             elif "test_unseen" in csv:
-                test_unseen[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
-                # test_unseen_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                tu[name] = pd.read_csv(os.path.join(path, csv))
+                tu_idx = tu[name].id.values
             elif "test_seen" in csv:
-                test_seen[csv[:-4]] = pd.read_csv(os.path.join(path, csv))
-                # test_probas[csv[:-4]] = pd.read_csv(os.path.join(path, csv)).proba.values
+                ts[name] = pd.read_csv(os.path.join(path, csv))
+                ts_idx = ts[name].id.values
 
     dev_probas = pd.DataFrame({k: v.proba.values for k, v in dev.items()})
-    test_seen_probas = pd.DataFrame({k: v.proba.values for k, v in test_seen.items()})
-    test_unseen_probas = pd.DataFrame({k: v.proba.values for k, v in test_unseen.items()})
-    print(dev_probas)
-    # dev_or = dev.copy()
-    # TODO
-    # test_or = test.copy()
-    # test_unseen_or = test_unseen.copy()
+    # dev_probas.set_index(dev_idx, inplace=True)
+    ts_probas = pd.DataFrame({k: v.proba.values for k, v in ts.items()})
+    # ts_probas.set_index(ts_idx, inplace=True)
+    tu_probas = pd.DataFrame({k: v.proba.values for k, v in tu.items()})
+    # tu_probas.set_index(tu_idx, inplace=True)
 
+    # TODO
+    '''
     if len(dev_df) > len(dev_probas):
-        print("Your predictions do not include the full dev!")
-        dev_df = dev[0][["id"]].merge(dev_df, how="left", on="id")  # TODO
+        #print("Your predictions do not include the full dev!")
+        #dev_df = dev[0][["id"]].merge(dev_df, how="left", on="id")
+    '''
 
     loop, last_score, delta = 0, 0, 0.1
 
     while delta > 0.0001:
 
         # Individual AUROCs
-        print('\n' + '-' * 21 + 'ROUND ' + str(loop) + '-' * 21)
+        print('\n' + '-' * 21, 'ROUND ' + str(loop), '-' * 21)
         print("Individual AUROCs for Validation Sets:\n")
         for i, column in enumerate(dev_probas):
-            score = roc_auc_score(dev_df.label, dev_probas.iloc[:, i])
+            score = roc_auc_score(gt.label, dev_probas.iloc[:, i])
             print(column, score)
 
         # Drop worst performing sets
         if loop > 0:
             print('\n' + '-' * 50)
-            scores = dev_probas.apply(lambda col: roc_auc_score(dev_df.label, col), result_type='reduce')
-            while len(dev) > 5:
+            scores = dev_probas.apply(lambda col: roc_auc_score(gt.label, col), result_type='reduce')
+            while len(scores) > 5:
                 worst = scores.idxmin()
-                del dev[worst]
-                dev_probas.drop(worst)
+                # del dev[worst]
+                dev_probas.drop(worst, axis=1, inplace=True)
+                ts_probas.drop(worst, axis=1, inplace=True)
+                tu_probas.drop(worst, axis=1, inplace=True)
+                scores.drop(worst, inplace=True)
                 print("Dropped:", worst)
 
         # Spearman Correlations:
         print('\n' + '-' * 50)
         print("Spearman Corrs:")
         dev_corr = dev_probas.corr(method='spearman')
-        test_seen_corr = test_seen_probas.corr(method='spearman')
-        test_unseen_corr = test_unseen_probas.corr(method='spearman')
+        test_seen_corr = ts_probas.corr(method='spearman')
+        test_unseen_corr = tu_probas.corr(method='spearman')
 
         print('\n', dev_corr)
         print('\n', test_seen_corr)
         print('\n', test_unseen_corr)
         print('\n' + '-' * 50)
 
-        # Simple Average
-        print('Simple Average:')
-        dev_SA = simple_average(dev_probas, dev[0], power=1, normalize=True)
-        test_seen_SA = simple_average(test_seen_probas, test_seen[0], power=1, normalize=True)
-        test_unseen_SA = simple_average(test_unseen_probas, test_unseen[0], power=1, normalize=True)
-        print(roc_auc_score(dev_df.label, dev_SA.proba), accuracy_score(dev_df.label, dev_SA.label))
+        # Simple
+        print('Simple:')
+        weights_dev = Simplex(dev_probas, gt.label)
+        dev_probas[f'dev_SX_{loop}'] = average(dev_probas, weights=weights_dev)
+        ts_probas[f'ts_SX_{loop}'] = average(ts_probas, weights=weights_dev)
+        tu_probas[f'tu_SX_{loop}'] = average(tu_probas, weights=weights_dev)
+        score = roc_auc_score(gt.label, dev_probas[f'dev_SX_{loop}'])
+        print(f"AUROC: {score:.4f}")
+        print(f"Accuracy: {acc_from_roc(gt.label, dev_probas[f'dev_SX_{loop}'])[0]:.4f}")
         print('\n' + '-' * 50)
 
-        # Power Average
+        # Arithmetic Mean
+        print('Arithmetic Mean:')
+        dev_probas[f'dev_AM_{loop}'] = average(dev_probas.apply(np.exp))
+        ts_probas[f'ts_AM_{loop}'] = average(ts_probas.apply(np.exp))
+        tu_probas[f'tu_AM_{loop}'] = average(tu_probas.apply(np.exp))
+        print(f"AUROC: {roc_auc_score(gt.label, dev_probas[f'dev_AM_{loop}']):.4f}")
+        print(f"Accuracy: {acc_from_roc(gt.label, dev_probas[f'dev_AM_{loop}'])[0]:.4f}")
+        print('\n' + '-' * 50)
+
+        # Geometric Mean (remain in logspace)
+        print('Geometric Mean:')
+        dev_probas[f'dev_GM_{loop}'] = average(dev_probas)
+        ts_probas[f'ts_GM_{loop}'] = average(ts_probas)
+        tu_probas[f'tu_GM_{loop}'] = average(tu_probas)
+        print(f"AUROC: {roc_auc_score(gt.label, dev_probas[f'dev_GM_{loop}']):.4f}")
+        print(f"Accuracy: {acc_from_roc(gt.label, dev_probas[f'dev_GM_{loop}'])[0]:.4f}")
+        print('\n' + '-' * 50)
+
+        # TODO: Power Average
+        '''
         print('Power Average:')
         dev_PA = simple_average(dev_probas, dev[0], power=2, normalize=True)
         test_PA = simple_average(test_probas, test[0], power=2, normalize=True)
         test_unseen_PA = simple_average(test_unseen_probas, test_unseen[0], power=2, normalize=True)
         print(roc_auc_score(dev_df.label, dev_PA.proba), accuracy_score(dev_df.label, dev_PA.label))
         print('\n' + '-' * 50)
+        '''
 
         # Rank Average
         print('Rank Average:')
-        dev_RA = rank_average(dev)
-        test_seen_RA = rank_average(test_seen)
-        test_unseen_RA = rank_average(test_unseen)
-        print(roc_auc_score(dev_df.label, dev_RA.proba), accuracy_score(dev_df.label, dev_RA.label))
+        dev_probas[f'dev_RA_{loop}'] = average(dev_probas.apply(lambda col: rankdata(col) / len(col)))
+        ts_probas[f'ts_RA_{loop}'] = average(ts_probas.apply(lambda col: rankdata(col) / len(col)))
+        tu_probas[f'tu_RA_{loop}'] = average(tu_probas.apply(lambda col: rankdata(col) / len(col)))
+        print(f"AUROC: {roc_auc_score(gt.label, dev_probas[f'dev_RA_{loop}']):.4f}")
+        print(f"Accuracy: {acc_from_roc(gt.label, dev_probas[f'dev_RA_{loop}'])[0]:.4f}")
         print('\n' + '-' * 50)
-
-        # Simple
-        print('Simple:')
-        weights_dev = Simplex(dev_probas, dev_df.label)
-        dev_SX = simple_average(dev_probas, dev[0], weights_dev)
-        test_seen_SX = simple_average(test_probas, test_seen[0], weights_dev)
-        test_unseen_SX = simple_average(test_unseen_probas, test_unseen[0], weights_dev)
-        print(roc_auc_score(dev_df.label, dev_SX.proba), accuracy_score(dev_df.label, dev_SX.label))
-        print('\n' + '-' * 50)
-
-        # Prepare Next Round
-        dev = dev_or + [dev_SA, dev_PA, dev_RA, dev_SX]
-        test = test_or + [test_SA, test_PA, test_RA, test_SX]
-        test_unseen = test_unseen_or + [test_unseen_SA, test_unseen_PA, test_unseen_RA, test_unseen_SX]
-        dev_probas = pd.concat([df.proba for df in dev], axis=1)
-        test_probas = pd.concat([df.proba for df in test], axis=1)
-        test_unseen_probas = pd.concat([df.proba for df in test_unseen], axis=1)
 
         # Calculate Delta & increment loop
-        delta = abs(roc_auc_score(dev_df.label, dev_SX.proba) - last_score)
-        last_score = roc_auc_score(dev_df.label, dev_SX.proba)
+        delta = abs(score - last_score)
+        last_score = score
 
         loop += 1
 
-        # I found the loop to not add any value after 2 rounds.
-        if loop == 2:
-            break
+        print("Currently at {} after {} loops.".format(last_score, loop))
 
-    print("Currently at {} after {} loops.".format(last_score, loop))
+    dev_best = dev_probas[f'dev_SX_{loop - 1}']
+    ts_best = ts_probas[f'ts_SX_{loop - 1}']
+    tu_best = tu_probas[f'tu_SX_{loop - 1}']
 
     # Get accuracy thresholds & optimize (This does not add value to the roc auc, but just to also have an acc score)
-    fpr, tpr, thresholds = metrics.roc_curve(dev_df.label, dev_SX.proba)
-    acc, threshold = get_acc_and_best_threshold_from_roc_curve(tpr, fpr, thresholds, 250, 250)
-    test_SX.label = test_SX.apply(set_acc, axis=1, args=[threshold])
-    test_unseen_SX.label = test_unseen_SX.apply(set_acc, axis=1, args=[threshold])
+    acc, threshold = acc_from_roc(gt.label, dev_best)
 
-    # Set path instd of /k/w ; Remove all csv data / load the exact same 3 files again as put out
     # As Simplex at some point simply weighs the highest of all - lets take sx as the final prediction after x loops
-    dev_SX.to_csv(os.path.join(path, "final/FIN_dev_seen_" + args.exp + "_" + str(loop) + ".csv"), index=False)
-    test_SX.to_csv(os.path.join(path, "final/FIN_test_seen_" + args.exp + "_" + str(loop) + ".csv"), index=False)
-    test_unseen_SX.to_csv(os.path.join(path, "final/FIN_test_unseen_" + args.exp + "_" + str(loop) + ".csv"),
-                          index=False)
+    ts_labels = ts_best.apply(lambda x: 1 if x > threshold else 0)
+    ts_out = pd.DataFrame({'id': ts_idx, 'proba': ts_best, 'label': ts_labels})
+    tu_labels = tu_best.apply(lambda x: 1 if x > threshold else 0)
+    tu_out = pd.DataFrame({'id': tu_idx, 'proba': tu_best, 'label': tu_labels})
+    ts_out.to_csv(os.path.join(path, f"final/FIN_test_seen_{args.exp}_{loop}.csv"), index=False)
+    tu_out.to_csv(os.path.join(path, f"final/FIN_test_unseen_{args.exp}_{loop}.csv"), index=False)
 
     print("Finished.")
 
