@@ -83,7 +83,7 @@ class HM:
 
         # GPU options
         if args.multiGPU:
-            self.model.lxrt_encoder.multi_gpu()
+            self.model = nn.DataParallel(self.model, gpu_ids=[0, 1, 2, 3])
 
         self.model = self.model.cuda()
 
@@ -180,8 +180,10 @@ class HM:
                 # Model expects visual feats as tuple of feats & boxes
                 logit = self.model(sent, (feats, boxes))
 
-                # Note: LogSoftmax does not change order, hence there should be nothing wrong with taking it as our prediction 
-                # In fact ROC AUC stays the exact same for logsoftmax / normal softmax, but logsoftmax is better for loss calculation
+                # Note: LogSoftmax does not change order, hence there should be nothing wrong with taking it as our
+                # prediction
+                # In fact ROC AUC stays the exact same for logsoftmax / normal softmax, but logsoftmax is better for
+                # loss calculation
                 # due to stronger penalization & decomplexifying properties (log(a/b) = log(a) - log(b))
                 logit = self.logsoftmax(logit)
                 score = logit[:, 1]
@@ -189,10 +191,12 @@ class HM:
                 if i < 1:
                     print(logit[0, :].detach())
 
-                # Note: This loss is the same as CrossEntropy (We splitted it up in logsoftmax & neg. log likelihood loss)
+                # Note: This loss is the same as CrossEntropy (We splitted it up in logsoftmax & neg. log likelihood
+                # loss)
                 loss = self.nllloss(logit.view(-1, 2), target.view(-1))
 
-                # Scaling loss by batch size, as we have batches with different sizes, since we do not "drop_last" & dividing by acc for accumulation
+                # Scaling loss by batch size, as we have batches with different sizes, since we do not "drop_last" &
+                # dividing by acc for accumulation
                 # Not scaling the loss will worsen performance by ~2abs%
                 loss = loss * logit.size(0) / args.acc
                 loss.backward()
@@ -227,8 +231,8 @@ class HM:
                     if ups % 250 == 0:
 
                         log_str = "\nEpoch(U) %d(%d): Train AC %0.2f RA %0.4f LOSS %0.4f\n" % (
-                        epoch, ups, evaluator.evaluate(id2ans) * 100,
-                        evaluator.roc_auc(id2prob) * 100, total_loss)
+                            epoch, ups, evaluator.evaluate(id2ans) * 100,
+                            evaluator.roc_auc(id2prob) * 100, total_loss)
 
                         # Set loss back to 0 after printing it
                         total_loss = 0.
@@ -243,9 +247,9 @@ class HM:
                                 #    self.save("BEST")
 
                             log_str += "\nEpoch(U) %d(%d): DEV AC %0.2f RA %0.4f \n" % (
-                            epoch, ups, acc * 100., roc_auc * 100)
+                                epoch, ups, acc * 100., roc_auc * 100)
                             log_str += "Epoch(U) %d(%d): BEST AC %0.2f RA %0.4f \n" % (
-                            epoch, ups, best_acc * 100., best_roc * 100.)
+                                epoch, ups, best_acc * 100., best_roc * 100.)
 
                         print(log_str, end='')
 
@@ -279,7 +283,8 @@ class HM:
                 feats, boxes = feats.cuda(), boxes.cuda()
                 logit = self.model(sent, (feats, boxes))
 
-                # Note: LogSoftmax does not change order, hence there should be nothing wrong with taking it as our prediction
+                # Note: LogSoftmax does not change order, hence there should be nothing wrong with taking it as our
+                # prediction
                 logit = self.logsoftmax(logit)
                 score = logit[:, 1]
 
