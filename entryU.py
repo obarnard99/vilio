@@ -197,7 +197,7 @@ class ModelU(nn.Module):
         elif self.tr_name.startswith("bert"):
             input_ids, img_feats, img_pos_feats, attn_masks, gather_index = self.preprocess_bert(sents, visual_feats, self.num_features, self.tokenizer)
 
-        seq_out, pooled_output = self.model(input_ids.cuda(), None, img_feats.cuda(), img_pos_feats.cuda(), attn_masks.cuda(), gather_index=gather_index.cuda())
+        seq_out, pooled_output = self.model(input_ids.cuda(0), None, img_feats.cuda(0), img_pos_feats.cuda(0), attn_masks.cuda(0), gather_index=gather_index.cuda(0))
 
         output = self.classifier(pooled_output)
 

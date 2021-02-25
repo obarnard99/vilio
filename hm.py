@@ -90,7 +90,7 @@ class HM:
         if args.multiGPU:
             self.model = ParallelWrapper(self.model)
 
-        self.model = self.model.cuda()
+        self.model = self.model.cuda(0)
 
         # Losses and optimizer
         self.logsoftmax = nn.LogSoftmax(dim=1)
