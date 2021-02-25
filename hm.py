@@ -83,7 +83,7 @@ class HM:
 
         # GPU options
         if args.multiGPU:
-            self.model = nn.DataParallel(self.model, gpu_ids=[0, 1, 2, 3])
+            self.model = nn.DataParallel(self.model)
 
         self.model = self.model.cuda()
 
