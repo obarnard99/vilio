@@ -54,7 +54,7 @@ class LXMERTTorchDataset(Dataset):
         # Loading datasets to data
         self.data = []
         for split in self.splits:
-            path = os.path.join("data/", f"{split}.jsonl")
+            path = os.path.join("./data/", f"{split}.jsonl")
             self.data.extend(
                     [json.loads(jline) for jline in open(path, "r").read().split('\n') if jline != ""]
             )
@@ -70,11 +70,11 @@ class LXMERTTorchDataset(Dataset):
             feature_path=feature_path)
 
         # No idea why, but for fbmdata final image gets extracted twice causing an error (ID: 81054)
-        for o in os.listdir(path):
+        for o in os.listdir(feature_path):
             if "(1)" in o:
-                os.remove(path + o) 
+                os.remove(os.path.join(feature_path, o))
 
-        self.id2file = {int(o.split("_")[0].split(".")[0]): o for o in os.listdir(path)}
+        self.id2file = {int(o.split("_")[0].split(".")[0]): o for o in os.listdir(feature_path)}
 
         print("Use %d data in torch dataset" % (len(self.data)))
 
