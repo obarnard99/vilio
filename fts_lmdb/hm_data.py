@@ -40,8 +40,8 @@ class HMTorchDataset(Dataset):
         # List to dict (for evaluation and others)
         self.id2datum = {datum["id"]: datum for datum in self.data}
 
-        feature_path = os.path.join(feature_path, "features")
         feature_db_path = os.path.join(feature_path, "detectron.lmdb")
+        feature_path = os.path.join(feature_path, "features")
 
         self.db = FeaturesDatabase(
             path=feature_db_path,
