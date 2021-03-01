@@ -53,7 +53,7 @@ class HMTorchDataset(Dataset):
             if "(1)" in o:
                 os.remove(os.path.join(feature_path, o))
 
-        self.id2file = {int(o.split("_")[0].split(".")[0]): o for o in os.listdir(path)}
+        self.id2file = {int(o.split("_")[0].split(".")[0]): o for o in os.listdir(feature_path)}
 
     def process_img(self, iid):
         f = self.id2file[iid]
