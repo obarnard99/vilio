@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mmdet-dev
+  labels:
+    app: mmdet-dev
+spec:
+  template:
+    metadata:
+      labels:
+        app: mmdet-dev
+    spec:
+      restartPolicy: OnFailure
+      volumes:
+        - name: mmdet-trainer-volume
+          persistentVolumeClaim:
+            claimName: mmdet-trainer-volume-claim
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: 4096Mi
+      containers:
+        - name: mmdet-dev
+          image: asia.gcr.io/alfredlabs-model-training/mmdet
+          command: ["/bin/sh", "-c"]
+          args: [
+            "python3 -c 'import time; time.sleep(9999999)'"
+          ]
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          resources:
+            limits:
+              cpu: "14"
+              memory: "90Gi"
+              nvidia.com/gpu: 4
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+          volumeMounts:
+            - mountPath: "/Disk2"
+              name: mmdet-trainer-volume
+            - mountPath: /dev/shm
+              name: cache-volume
+      nodeSelector:
+        cloud.google.com/gke-nodepool: gpu-pool-1
