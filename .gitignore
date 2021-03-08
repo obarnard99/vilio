@@ -1,2 +1,3 @@
-data/
+data
 ernie-vil*
+*__pycache__
