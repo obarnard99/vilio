@@ -1,105 +1,87 @@
-SELF=$(dirname "$(realpath $0)")
-MEME_ROOT_DIR="$SELF/../data/hateful_memes"
-DATA_DIR="$SELF/../data"
+DATA_DIR="/home/miproj/4thyr.oct2020/ojrb2/vilio/data"
+FEATURE_DIR="$DATA_DIR/features"
+MODEL_DIR="$DATA_DIR/models"
 
 # OCR to get text bbox and mask
-# python3 ocr.py detect $MEME_ROOT_DIR
-# python3 ocr.py point_to_box $MEME_ROOT_DIR/ocr.json
-# python3 ocr.py generate_mask $MEME_ROOT_DIR/ocr.box.json $MEME_ROOT_DIR/img $MEME_ROOT_DIR/img_mask_3px
-
-echo "[OCR] detect"
-if [ ! -e "$MEME_ROOT_DIR/ocr.json" ]; then
-    docker run --gpus all \
-        -v $SELF:/src \
-        -v $MEME_ROOT_DIR:/data \
-        dsfhe49854/vl-bert \
-        python3 /src/ocr.py detect \
-        /data
+if [ ! -e "$FEATURE_DIR/ocr.json" ]; then
+    echo "[OCR] detect"
+    python ocr.py detect $DATA_DIR
+else
+    echo "[OCR] found ocr.json"
 fi;
 
-echo "[OCR] convert point annotation to box"
-if [ ! -e "$MEME_ROOT_DIR/ocr.box.json" ]; then
-    docker run --gpus all \
-        -v $SELF:/src \
-        -v $MEME_ROOT_DIR:/data \
-        dsfhe49854/vl-bert \
-        python3 /src/ocr.py point_to_box \
-        /data/ocr.json
-fi;
-
-echo "[OCR] create text segmentation mask"
-if [ ! -d "$MEME_ROOT_DIR/img_mask_3px" ]; then
-    docker run --gpus all \
-        -v $SELF:/src \
-        -v $MEME_ROOT_DIR:/data \
-        dsfhe49854/vl-bert \
-        python3 /src/ocr.py generate_mask \
-        /data/ocr.box.json \
-        /data/img \
-        /data/img_mask_3px
+if [ ! -e "$FEATURE_DIR/ocr.box.json" ]; then
+    echo "[OCR] convert point annotation to box"
+    python ocr.py point_to_box $FEATURE_DIR/ocr.json
+else
+    echo "[OCR] found ocr.box.json"
 fi;
 
 
-# remove text by inpainting
-echo "[mmediting] remove text using text mask"
-if [ ! -d "$MEME_ROOT_DIR/img_clean" ]; then
-    docker run --gpus all \
-        -v "$SELF/../pretrain_model":/pretrain_model \
-        -v "$MEME_ROOT_DIR":/data \
-        dsfhe49854/mmedit \
-        python3 /mmediting/demo/inpainting_demo.py  \
-        /mmediting/configs/inpainting/deepfillv2/deepfillv2_256x256_8x2_places.py \
-        /pretrain_model/deepfillv2_256x256_8x2_places_20200619-10d15793.pth \
-        /data/img_mask_3px/ /data/img_clean
+if [ ! -d "$FEATURE_DIR/img_mask_3px" ]; then
+    echo "[OCR] create text segmentation mask"
+    python ocr.py generate_mask \
+        $FEATURE_DIR/ocr.box.json \
+        $DATA_DIR/img \
+        $FEATURE_DIR/img_mask_3px
+else
+    echo "[OCR] found img_mask_3px"
+fi;
+
+# Remove text by inpainting
+if [ ! -d "$FEATURE_DIR/img_clean" ]; then
+    echo "[mmediting] remove text using text mask"
+    python mmediting/demo/inpainting_demo.py \
+        mmediting/configs/inpainting/deepfillv2/deepfillv2_256x256_8x2_places.py \
+        $MODEL_DIR/deepfillv2_256x256_8x2_places_20200619-10d15793.pth \
+        $FEATURE_DIR/img_mask_3px \
+        $FEATURE_DIR/img_clean
+else
+    echo "[mmediting] found img_clean"
 fi;
 
 # Run InceptionV2 OID
-echo "[TF OID] OpenImageV4 object detector"
-if [ ! -e "$MEME_ROOT_DIR/box_annos.json" ]; then
-    docker run --gpus all \
-        -v $SELF:/src \
-        -v $MEME_ROOT_DIR:/data \
-        dsfhe49854/vl-bert \
-        python3 /src/gen_bbox.py /data/img_clean /data/box_annos.json
+if [ ! -e "$FEATURE_DIR/box_annos.json" ]; then
+    echo "[TF OID] OpenImageV4 object detector"
+    python gen_bbox.py \
+        $FEATURE_DIR/img_clean \
+        $FEATURE_DIR/box_annos.json
+else
+    echo "[TF OID] found box_annos.json"
 fi;
 
-# detect and extract image patchs
-if [ ! -e "$MEME_ROOT_DIR/split_img_clean_boxes.json" ]; then
-    echo "[mmdetection] detect is meme image compose with muliple patchs"
-    docker run --gpus all \
-        -v "$SELF/../pretrain_model":/pretrain_model \
-        -v "$MEME_ROOT_DIR":/data \
-        dsfhe49854/mmdetect-mmedit \
-        python3 tools/inspect_image_clip.py \
-        /data/img_clean \
-        /data/split_img_clean \
-        /data/split_img_clean_boxes.json \
-        --config_file configs/res2net/faster_rcnn_r2_101_fpn_2x_img_clip.py \
-        --checkpoint_file /pretrain_model/faster_rcnn_r2_101_fpn_2x_img_clip/epoch_3.pth
+# Detect and extract image patchs
+if [ ! -e "$FEATURE_DIR/split_img_clean_boxes.json" ]; then
+    echo "[mmdetection] image patch detection"
+    python mmdetection/tools/inspect_image_clip.py \
+        $FEATURE_DIR/img_clean \
+        $FEATURE_DIR/split_img_clean \
+        $FEATURE_DIR/split_img_clean_boxes.json \
+        --config_file mmdetection/configs/res2net/faster_rcnn_r2_101_fpn_2x_img_clip.py \
+        --checkpoint_file $MODEL_DIR/faster_rcnn_r2_101_fpn_2x_img_clip/epoch_3.pth
 else
-    echo "[mmdetection] found split_img_clean_boxes.json, skip this step~"
+    echo "[mmdetection] found split_img_clean_boxes.json"
 fi;
 
 # Get race of face and head
-echo "[FairFace]"
-if [ ! -e "$MEME_ROOT_DIR/face_race_boxes.json" ]; then
-    docker run --gpus all \
-        -v "$MEME_ROOT_DIR":/data \
-        dsfhe49854/fairface-dlib \
-        python3 inference.py detect_race_mp \
-        /data/box_annos.json \
-        /data/img_clean \
-        /data/face_race_boxes.json \
+if [ ! -e "$FEATURE_DIR/face_race_boxes.json" ]; then
+    echo "[FairFace] detect ethnicity"
+    python FairFace/inference.py detect_race_mp \
+        $FEATURE_DIR/box_annos.json \
+        $FEATURE_DIR/img_clean \
+        $FEATURE_DIR/face_race_boxes.json \
         --debug False \
         --worker 4
+else
+    echo "[FairFace] found face_race_boxes.json"
 fi;
 
-if [ ! -e "$MEME_ROOT_DIR/box_annos.race.json" ]; then
-    docker run --gpus all \
-        -v "$MEME_ROOT_DIR":/data \
-        dsfhe49854/fairface-dlib \
-        python3 inference.py map_race_to_person_box \
-        /data/img_clean \
-        /data/box_annos.json \
-        /data/face_race_boxes.json
+if [ ! -e "$FEATURE_DIR/box_annos.race.json" ]; then
+    echo "[FairFace] map ethnicity to person box"
+    python inference.py map_race_to_person_box \
+        $FEATURE_DIR/img_clean \
+        $FEATURE_DIR/box_annos.json \
+        $FEATURE_DIR/face_race_boxes.json
+else
+    echo "[FairFace] found box_annos.race.json"
 fi;
