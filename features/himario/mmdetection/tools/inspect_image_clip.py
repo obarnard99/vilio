@@ -1,6 +1,7 @@
 import os
 import glob
 import json
+import cv2
 import mmcv
 import fire
 import numpy as np

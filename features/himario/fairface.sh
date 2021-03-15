@@ -16,7 +16,7 @@ fi;
 
 if [ ! -e "$FEATURE_DIR/box_annos.race.json" ]; then
     echo "[FairFace] map ethnicity to person box"
-    python inference.py map_race_to_person_box \
+    python FairFace/inference.py map_race_to_person_box \
         $FEATURE_DIR/img_clean \
         $FEATURE_DIR/box_annos.json \
         $FEATURE_DIR/face_race_boxes.json

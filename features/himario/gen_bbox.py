@@ -45,9 +45,10 @@ def pull_imgs(img_path_list, output_queue:queue.Queue):
         output_queue.put((converted_img, img_file))
 
 def hateful_meme(img_dir, output_path, debug=False):
-    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-
-    with tf.device('/device:GPU:0'):
+    print("GPUs Available: ", tf.config.list_physical_devices('GPU'))
+    debug=False
+    #ith tf.device('/GPU:0'):
+    if not debug:
         img_pattern = os.path.join(img_dir, '*.png')
         img_files = glob.glob(img_pattern)
         img_files = sorted(img_files)
@@ -62,7 +63,7 @@ def hateful_meme(img_dir, output_path, debug=False):
 
         if debug:
             print('RUn in debug mode!')
-        
+
         module_handle = "https://tfhub.dev/google/faster_rcnn/openimages_v4/inception_resnet_v2/1" #@param ["https://tfhub.dev/google/openimages_v4/ssd/mobilenet_v2/1", "https://tfhub.dev/google/faster_rcnn/openimages_v4/inception_resnet_v2/1"]
         detector = hub.load(module_handle).signatures['default']
         det_annos = []
@@ -73,9 +74,9 @@ def hateful_meme(img_dir, output_path, debug=False):
                 break
             if i >= len(img_files):
                 break
-            
+
             tensor, img_file = img_queue.get(block=True, timeout=10)
-            
+
             print(f"[{i}/{len(img_files)}] {img_file}")
             result = run_detector_tensor(detector, tensor)
             img_queue.task_done()
@@ -99,11 +100,11 @@ def hateful_meme(img_dir, output_path, debug=False):
             img_name = os.path.basename(img_file)
             det_anno = {
                 'img_name': img_name,
-                'boxes_and_score': boxes_score 
+                'boxes_and_score': boxes_score
             }
             det_annos.append(det_anno)
             i += 1
-        
+
         with open(output_path, mode='w') as output:
             json.dump(det_annos, output)
 
