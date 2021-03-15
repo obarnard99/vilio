@@ -1,44 +1,26 @@
-SELF=$(dirname "$(realpath $0)")
-MEME_ROOT_DIR="$SELF/../data/hateful_memes"
-DATA="$SELF/../data"
+DATA_DIR="/home/miproj/4thyr.oct2020/ojrb2/vilio/data"
+FEATURE_DIR="$DATA_DIR/features"
 
-docker run \
-    -v $SELF:/src \
-    -v $MEME_ROOT_DIR:/meme_data \
-    dsfhe49854/vl-bert \
-    python3 /src/gcp/web_enetity.py create_img_list \
-    /meme_data/img_clean \
-    /meme_data/img_list_all_clean \
-    --split_size 20000 \
-    --exclude_dir /data/split_img_clean
-docker run \
-    -v $SELF:/src \
-    -v $MEME_ROOT_DIR:/meme_data \
-    dsfhe49854/vl-bert \
-    python3 /src/gcp/web_enetity.py create_img_list \
-    /meme_data/split_img_clean \
-    /meme_data/split_img_list_clean \
-    --split_size 20000
+python gcp/web_entity.py create_img_list \
+  $FEATURE_DIR/img_clean \
+  $FEATURE_DIR/img_list_all_clean \
+  --split_size 20000 \
+  --exclude_dir $FEATURE_DIR/split_img_clean
 
-mkdir -p "$DATA/entity_json"
-docker run \
-    -v $SELF:/src \
-    -v $MEME_ROOT_DIR:/meme_data \
-    -v $DATA:/data \
-    dsfhe49854/vl-bert \
-    bash /src/gcp/loop.sh \
-    /meme_data/img_list_all_clean/img_clean_split.0.txt \
-    /data/entity_json
+python gcp/web_entity.py create_img_list \
+  $FEATURE_DIR/split_img_clean \
+  $FEATURE_DIR/split_img_list_clean \
+  --split_size 20000
 
-mkdir -p "$DATA/entity_json_split"
-docker run \
-    -v $SELF:/src \
-    -v $MEME_ROOT_DIR:/meme_data \
-    -v $DATA:/data \
-    dsfhe49854/vl-bert \
-    bash /src/gcp/loop.sh \
-    /meme_data/split_img_list_clean/split_img_clean_split.0.txt \
-    /data/entity_json_split
+mkdir -p "$FEATURE_DIR/entity_json"
+bash gcp/loop.sh \
+  $FEATURE_DIR/img_list_all_clean/img_clean_split.0.txt \
+  $FEATURE_DIR/entity_json
 
-cp $DATA/entity_json_split/*.json "$DATA/entity_json"
+mkdir -p "$FEATURE_DIR/entity_json_split"
+bash gcp/loop.sh \
+  $FEATURE_DIR/split_img_list_clean/split_img_clean_split.0.txt \
+  $FEATURE_DIR/entity_json_split
+
+cp $FEATURE_DIR/entity_json_split/*.json "$FEATURE_DIR/entity_json"
 
