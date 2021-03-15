@@ -25,16 +25,14 @@ UNITER_DIR="$FEATURE_DIR/uniter"
 # Extract bottom up attention roi feature PT file
 echo "[py-bottom-up-attention] extract features"
 if [ ! -e "$FEATURE_DIR/hateful_memes_v2.pt" ]; then
-    python hateful_meme_feature.py \
-      $FEATURE_DIR/extract_oid_boxes_feat \
-      $FEATURE_DIR//box_annos.json \
+    python hateful_meme_feature.py extract_oid_boxes_feat \
+      $FEATURE_DIR/box_annos.json \
       $FEATURE_DIR \
       $FEATURE_DIR/hateful_memes_v2.pt
 fi
 echo "[py-bottom-up-attention] extract features with augmentation 1/3"
 if [ ! -e "$FEATURE_DIR/hateful_memes_v2.aug.0.pt" ]; then
-    python hateful_meme_feature.py \
-      extract_oid_boxes_feat_with_img_aug \
+    python hateful_meme_feature.py extract_oid_boxes_feat_with_img_aug \
       $FEATURE_DIR/box_annos.json \
       $FEATURE_DIR \
       $FEATURE_DIR/hateful_memes_v2.aug.0.pt \
@@ -42,8 +40,7 @@ if [ ! -e "$FEATURE_DIR/hateful_memes_v2.aug.0.pt" ]; then
 fi
 echo "[py-bottom-up-attention] extract features with augmentation 2/3"
 if [ ! -e "$FEATURE_DIR/hateful_memes_v2.aug.1.pt" ]; then
-    python hateful_meme_feature.py \
-      extract_oid_boxes_feat_with_img_aug \
+    python hateful_meme_feature.py extract_oid_boxes_feat_with_img_aug \
       $FEATURE_DIR/box_annos.json \
       $FEATURE_DIR \
       $FEATURE_DIR/hateful_memes_v2.aug.1.pt \
@@ -51,8 +48,7 @@ if [ ! -e "$FEATURE_DIR/hateful_memes_v2.aug.1.pt" ]; then
 fi
 echo "[py-bottom-up-attention] extract features with augmentation 3/3"
 if [ ! -e "$FEATURE_DIR/hateful_memes_v2.aug.2.pt" ]; then
-    python hateful_meme_feature.py \
-      extract_oid_boxes_feat_with_img_aug \
+    python hateful_meme_feature.py extract_oid_boxes_feat_with_img_aug \
       $FEATURE_DIR/box_annos.json \
       $FEATURE_DIR \
       $FEATURE_DIR/hateful_memes_v2.aug.2.pt \
