@@ -4,6 +4,7 @@ import os
 
 from PIL import Image
 import imagehash
+import fire
 
 
 # Image hash functions: 
@@ -79,9 +80,6 @@ def clean_data(data_path="./data", force=False):
 
     # b) Pretrain file for ITM & LM pre-training
     pretrain = pd.concat([train, dev_seen, dev_unseen])
-    #dim_error = [63805, 73026, 16845, 27058]  # The following ids throw some dimension error when pre-training
-    #pretrain = pretrain[~pretrain['id'].isin(dim_error)]
-    #pretrain["label"].fillna(0, inplace=True)
     pretrain.to_json(path_or_buf=os.path.join(data_path, "pretrain.jsonl"), orient='records', lines=True)
 
     # c) Cleaned Train + unused data from dev_unseen
@@ -89,9 +87,13 @@ def clean_data(data_path="./data", force=False):
     trainlarge.to_json(path_or_buf=os.path.join(data_path, "trainlarge.jsonl"), orient='records', lines=True)
 
     # d) Cleaned Train + unused data from dev_unseen + dev_seen
-    traindev = pd.concat([train, dev_unseen, dev_seen])
+    traindev = pd.concat([train, dev_seen, dev_unseen])
     traindev.to_json(path_or_buf=os.path.join(data_path, "traindev.jsonl"), orient='records', lines=True)
+
+    # e) Full dev set
+    dev_all = pd.concat([dev_seen, dev_unseen])
+    dev_all.to_json(path_or_buf=os.path.join(data_path, "dev_all.jsonl"), orient='records', lines=True)
 
 
 if __name__ == '__main__':
-    clean_data(data_path='C:/Users/obarn/Projects/F-MT126-1/data/hmc_unseen/', force=True)
+    fire.Fire(clean_data)

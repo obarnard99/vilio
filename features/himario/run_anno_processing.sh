@@ -1,69 +1,49 @@
+DATA_DIR="/home/miproj/4thyr.oct2020/ojrb2/vilio/data"
+FEATURE_DIR="$DATA_DIR/features"
+ANNO_DIR="$DATA_DIR/annotations"
+ENTITY_DIR="$FEATURE_DIR/entity_json"
 
-SELF=$(dirname "$(realpath $0)")
-MEME_ROOT_DIR="$SELF/../data/hateful_memes"
-DATA="$SELF/../data/"
-ENTITY_DIR="$DATA/entity_json"
-echo $DATA
-
-if [ ! -e "$DATA/entity_tags.pickle" ]; then
-    echo "[web_enetity] create image entity description"
-    docker run --gpus all \
-        -v $SELF:/src \
-        -v $MEME_ROOT_DIR:/meme_data \
-        -v $DATA:/data \
-        dsfhe49854/vl-bert \
-        python3 /src/gcp/web_enetity.py create_description \
-        --json_dir /data/entity_json \
-        --out_pickle /data/entity_tags.pickle
+if [ ! -e "$FEATURE_DIR/entity_tags.pickle" ]; then
+    echo "[web_entity] create image entity description"
+    python gcp/web_entity.py \
+      create_description \
+      --json_dir $ENTITY_DIR \
+      --out_pickle $FEATURE_DIR/entity_tags.pickle
 fi
-if [ ! -e "$DATA/entity_cleaned.pickle" ]; then
-    echo "[web_enetity] cleaning image entity description"
-    docker run --gpus all\
-        -v $SELF:/src \
-        -v $MEME_ROOT_DIR:/meme_data \
-        -v $DATA:/data \
-        dsfhe49854/vl-bert \
-        python3 /src/gcp/web_enetity.py titles_cleanup \
-        /data/entity_tags.pickle \
-        --out_pickle /data/entity_cleaned.pickle
+if [ ! -e "$FEATURE_DIR/entity_cleaned.pickle" ]; then
+    echo "[web_entity] cleaning image entity description"
+    python gcp/web_entity.py \
+      titles_cleanup \
+      $FEATURE_DIR/entity_tags.pickle \
+      --out_pickle $FEATURE_DIR/entity_cleaned.pickle
 fi
 
-if [ ! -e "$DATA/summary_entity_cleaned.pickle" ]; then
-    echo "[web_enetity] summary image entity description"
-    docker run --gpus all\
-        -v $SELF:/src \
-        -v $MEME_ROOT_DIR:/meme_data \
-        -v $DATA:/data \
-        dsfhe49854/vl-bert \
-        python3 /src/gcp/web_enetity.py titles_summary \
-        /data/entity_cleaned.pickle \
-        /data/summary_entity_cleaned.pickle
+if [ ! -e "$FEATURE_DIR/summary_entity_cleaned.pickle" ]; then
+    echo "[web_entity] summary image entity description"
+    python gcp/web_entity.py \
+      titles_summary \
+      $FEATURE_DIR/entity_cleaned.pickle \
+      $FEATURE_DIR/summary_entity_cleaned.pickle
 fi
 
-echo "Build: $MEME_ROOT_DIR/dev_all.jsonl"
-docker run \
-    -v $SELF:/src \
-    -v $MEME_ROOT_DIR:/data \
-    dsfhe49854/vl-bert \
-    python3 /src/merge_dev_set.py /data
+echo "Build: $ANNO_DIR/dev_all.jsonl"
+    python ../../utils/pandas_scripts.py clean_data \
+      --data_path $ANNO_DIR \
+      --force
 
-SPLIT_LIST=("train.jsonl" "test_unseen.jsonl" "test_seen.jsonl" "dev_unseen.jsonl" "dev_seen.jsonl" "dev_all.jsonl")
+SPLIT_LIST=("train" "test_unseen" "test_seen" "dev_unseen" "dev_seen" "dev_all")
 
 for SPLIT in "${SPLIT_LIST[@]}"; do
-    if [ ! -e "$MEME_ROOT_DIR/$SPLIT" ]; then
-        echo "Insert features to: $MEME_ROOT_DIR/$SPLIT"
-        docker run \
-            -v $SELF:/src \
-            -v $MEME_ROOT_DIR:/meme_data \
-            -v $DATA:/data \
-            dsfhe49854/vl-bert \
-            python3 /src/gcp/web_enetity.py insert_anno_jsonl  \
-                /data/summary_entity_cleaned.pickle  \
-                /meme_data/$SPLIT \
-                /meme_data/split_img_clean_boxes.json  \
-                /meme_data/ocr.box.json
+    if [ ! -e "$ANNO_DIR/$SPLIT.entity.jsonl" ]; then
+        echo "Insert features to: $ANNO_DIR/$SPLIT.jsonl"
+        python gcp/web_entity.py insert_anno_jsonl  \
+          $FEATURE_DIR/summary_entity_cleaned.pickle  \
+          $ANNO_DIR/$SPLIT.jsonl \
+          $FEATURE_DIR/split_img_clean_boxes.json \
+          $FEATURE_DIR/ocr.box.json \
+          --img_dir $DATA_DIR/img
     fi
 done
 
-cp "$MEME_ROOT_DIR/train.entity.jsonl" "$MEME_ROOT_DIR/train_dev_all.entity.jsonl"
-cat "$MEME_ROOT_DIR/dev_all.entity.jsonl" >> "$MEME_ROOT_DIR/train_dev_all.entity.jsonl"
+cp "$ANNO_DIR/train.entity.jsonl" "$ANNO_DIR/train_dev_all.entity.jsonl"
+cat "$ANNO_DIR/dev_all.entity.jsonl" >> "$ANNO_DIR/train_dev_all.entity.jsonl"
