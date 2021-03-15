@@ -3,6 +3,8 @@ FEATURE_DIR="$DATA_DIR/features"
 ANNO_DIR="$DATA_DIR/annotations"
 ENTITY_DIR="$FEATURE_DIR/entity_json"
 
+export GOOGLE_APPLICATION_CREDENTIALS="/home/miproj/4thyr.oct2020/ojrb2/uploads/f-mt126-1-e8ab23b3ed9a.json"
+
 if [ ! -e "$FEATURE_DIR/entity_tags.pickle" ]; then
     echo "[web_entity] create image entity description"
     python gcp/web_entity.py \
