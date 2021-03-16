@@ -33,11 +33,6 @@ if args.contrib:
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
 
 
-class ParallelWrapper(nn.DataParallel):
-    def __getattr__(self, name):
-        return getattr(self.module, name)
-
-
 def get_tuple(splits: str, bs: int, shuffle=False, drop_last=False) -> DataTuple:
     dset = HMDataset(splits)
     tset = HMTorchDataset(splits, feature_path=args.features)
@@ -85,10 +80,6 @@ class HM:
         # Load pre-trained weights from paths
         if args.loadpre is not None:
             self.model.load(args.loadpre)
-
-        # GPU options
-        if args.multiGPU:
-            self.model = ParallelWrapper(self.model)
 
         self.model = self.model.cuda(0)
 
