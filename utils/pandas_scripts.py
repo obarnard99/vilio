@@ -20,7 +20,7 @@ def phash(img_path):
 
 # The HM Dataset is very noisy: In the first version of the dataset there were many duplicates with conflicting labels
 # In the second version, the conflicting labels have all been resolved, yet the duplicates remain
-def clean_data(data_path="./data", force=False):
+def clean_data(data_path="./data", img_path="./data", force=False):
     """
     Cleans the HM train & dev data.
     Outputs traindev & pretrain data.
@@ -48,7 +48,7 @@ def clean_data(data_path="./data", force=False):
     # Clean training data
     df_dict = {'train': train, 'dev_seen': dev_seen, 'dev_unseen': dev_unseen}
     train_dist = pd.concat([df.assign(identity=key) for key, df in df_dict.items()])
-    train_dist['full_path'] = train_dist['img'].apply(lambda x: os.path.join(data_path, str(x)))
+    train_dist['full_path'] = train_dist['img'].apply(lambda x: os.path.join(img_path, str(x)))
 
     # Identify text dups
     text_dups = train_dist.text.value_counts().reset_index(name="counter")
@@ -96,4 +96,4 @@ def clean_data(data_path="./data", force=False):
 
 
 if __name__ == '__main__':
-    fire.Fire(clean_data)
+    clean_data(data_path='/home/miproj/4thyr.oct2020/ojrb2/vilio/data/annotations', img_path='/home/miproj/4thyr.oct2020/ojrb2/vilio/data', force=True)
