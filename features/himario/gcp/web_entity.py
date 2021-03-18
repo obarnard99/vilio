@@ -19,7 +19,7 @@ from google.cloud import vision
 from google.protobuf.json_format import MessageToJson
 from PIL import Image
 
-entity_black_list = [
+entity_blacklist = [
     'Stock photography',
     'Image',
     'Getty Images',
@@ -62,8 +62,8 @@ entity_black_list = [
     'cartoon',
     'YouTube',
 ]
-entity_black_list = [e.lower() for e in entity_black_list]
-entity_white_list = [
+entity_blacklist = [e.lower() for e in entity_blacklist]
+entity_whitelist = [
     'disable',
     'disability',
     'down syndrome',
@@ -71,7 +71,7 @@ entity_white_list = [
     'immigran',
     'handicapped',
 ]
-noun_chunk_blist = [
+noun_chunk_blacklist = [
     'stock pictures',
     'stock picture',
     'stock photos',
@@ -113,7 +113,7 @@ noun_chunk_blist = [
     '- getty image',
     '- getty',
 ]
-noun_chunk_blist = sorted(noun_chunk_blist, key=lambda x: len(x), reverse=True)
+noun_chunk_blacklist = sorted(noun_chunk_blacklist, key=lambda x: len(x), reverse=True)
 
 
 def create_img_list(img_dir, exclude_dir=None):
@@ -148,6 +148,67 @@ def create_img_list_files(img_dir, output_dir='img_lists', split_size=30000, exc
         with open(file_name, mode='w') as f:
             for l in split:
                 f.write(l + '\n')
+
+
+def detect_web(path):
+    """Detects web annotations given path to an image."""
+
+    assert os.path.exists(path) and os.path.isfile(path)
+
+    client = vision.ImageAnnotatorClient()
+
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+    image = vision.types.Image(content=content)
+
+    response = client.web_detection(image=image)
+    annotations = response.web_detection
+
+    if annotations.best_guess_labels:
+        for label in annotations.best_guess_labels:
+            print('\nBest guess label: {}'.format(label.label))
+
+    if annotations.pages_with_matching_images:
+        print('\n{} pages with matching images found'.format(len(annotations.pages_with_matching_images)))
+
+    if response.error.message:
+        raise Exception('{}\nFor more info on error messages, check: '
+                        'https://cloud.google.com/apis/design/errors'.format(response.error.message))
+
+    return annotations
+
+
+def detect_image(path, json_path):
+    """Calls web entity detection on a single image and stores result as json"""
+    annotations = detect_web(path)
+    json_str = MessageToJson(annotations)
+    with open(json_path, mode='w') as f:
+        f.write(json_str)
+
+
+def detect_dataset(img_list, output_dir):
+    """Generates json files with web entities for a list of images."""
+    os.makedirs(output_dir, exist_ok=True)
+    for i, img in enumerate(img_list):
+        print('-' * 100)
+        assert os.path.exists(img)
+        print(f"[{i}] {img}")
+
+        img_name = os.path.basename(img)
+        json_name = img_name.replace('.jpg', '').replace('.png', '') + '.json'
+        json_path = os.path.join(output_dir, json_name)
+
+        if os.path.exists(json_path):
+            print(f'Skip {img}, it already exists!')
+        else:
+            detect_image(img, json_path)
+
+
+def detect_dataset_from_file(img_list_file, output_dir):
+    """Loads list of images and calls detect_dataset on it."""
+    with open(img_list_file, mode='r') as f:
+        img_list = f.readlines()
+        detect_dataset(img_list, output_dir)
 
 
 def get_best_match(query, corpus, step=4, flex=3, case_sensitive=False, verbose=False):
@@ -195,7 +256,7 @@ def get_best_match(query, corpus, step=4, flex=3, case_sensitive=False, verbose=
 
     def adjust_left_right_positions():
         """Return left/right positions for best string match."""
-        # bp_* is synonym for 'Best Position Left/Right' and are adjusted 
+        # bp_* is synonym for 'Best Position Left/Right' and are adjusted
         # to optimize bmv_*
         p_l, bp_l = [pos] * 2
         p_r, bp_r = [pos + qlen] * 2
@@ -250,101 +311,6 @@ def get_best_match(query, corpus, step=4, flex=3, case_sensitive=False, verbose=
     pos_left, pos_right, match_value = adjust_left_right_positions()
 
     return slice(pos_left, pos_right), match_value
-
-
-def detect_web(path):
-    """Detects web annotations given an image."""
-
-    assert os.path.exists(path) and os.path.isfile(path)
-    client = vision.ImageAnnotatorClient()
-
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = vision.types.Image(content=content)
-
-    response = client.web_detection(image=image)
-    annotations = response.web_detection
-
-    if annotations.best_guess_labels:
-        for label in annotations.best_guess_labels:
-            print('\nBest guess label: {}'.format(label.label))
-
-    if annotations.pages_with_matching_images:
-        print('\n{} Pages with matching images found:'.format(
-            len(annotations.pages_with_matching_images)))
-
-        # for page in annotations.pages_with_matching_images:
-        #     print('\n\tPage url   : {}'.format(page.url))
-
-        #     if page.full_matching_images:
-        #         print('\t{} Full Matches found: '.format(
-        #                len(page.full_matching_images)))
-
-        #         for image in page.full_matching_images:
-        #             print('\t\tImage url  : {}'.format(image.url))
-
-        #     if page.partial_matching_images:
-        #         print('\t{} Partial Matches found: '.format(
-        #                len(page.partial_matching_images)))
-
-        #         for image in page.partial_matching_images:
-        #             print('\t\tImage url  : {}'.format(image.url))
-
-    # if annotations.web_entities:
-    #     print('\n{} Web entities found: '.format(
-    #         len(annotations.web_entities)))
-
-    #     for entity in annotations.web_entities:
-    #         print('\n\tScore      : {}'.format(entity.score))
-    #         print(u'\tDescription: {}'.format(entity.description))
-
-    # if annotations.visually_similar_images:
-    #     print('\n{} visually similar images found:\n'.format(
-    #         len(annotations.visually_similar_images)))
-
-    #     for image in annotations.visually_similar_images:
-    #         print('\tImage url    : {}'.format(image.url))
-
-    if response.error.message:
-        raise Exception(
-            '{}\nFor more info on error messages, check: '
-            'https://cloud.google.com/apis/design/errors'.format(
-                response.error.message))
-
-    return annotations
-
-
-def detect_image(path, json_path):
-    annotations = detect_web(path)
-    json_str = MessageToJson(annotations)
-    with open(json_path, mode='w') as f:
-        f.write(json_str)
-
-
-def detect_dataset(img_list, output_dir, auto_break=20):
-    os.makedirs(output_dir, exist_ok=True)
-    start_id = -1
-    with open(img_list, mode='r') as f:
-        for i, line in enumerate(f):
-            line = line.replace('\n', '')
-            assert os.path.exists(line)
-            print(f"[{i}] {line}")
-
-            img_name = os.path.basename(line)
-            json_name = img_name.replace('.jpg', '').replace('.png', '') + '.json'
-            json_path = os.path.join(output_dir, json_name)
-
-            if os.path.exists(json_path):
-                print(f'Skip {line}, it already exists!')
-            else:
-                if start_id < 0:
-                    start_id = i
-                else:
-                    if i - start_id >= auto_break:
-                        break
-                detect_image(line, json_path)
-                print('-' * 100)
 
 
 def create_description(json_dir='/home/ron/Downloads/hateful_meme_data/web_entity_clean_all/', out_pickle=None):
@@ -483,7 +449,7 @@ def link_noun_chunk(token, token_map, direction=None, depth=0, prev_token=None):
     return token_link
 
 
-nlp = spacy.load("en_core_web_lg")
+#nlp = spacy.load("en_core_web_lg")
 
 
 def extract_subject(titles):
@@ -912,10 +878,16 @@ if __name__ == "__main__":
             'insert_anno_jsonl': insert_anno_jsonl,
         })
     """
-    img_dir = ''
-    split_img_dir = ''
+    # args
+    img_dir = 'C:/Users/obarn/Projects/F-MT126-1/vilio/data/features/img_clean'
+    split_img_dir = 'C:/Users/obarn/Projects/F-MT126-1/vilio/data/features/split_img_clean'
+    entity_dir = 'C:/Users/obarn/Projects/F-MT126-1/vilio/data/features/entity_json'
+
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "f-mt126-1-e8ab23b3ed9a.json"
+
+    # build img list
     img_list = create_img_list(img_dir, exclude_dir=split_img_dir)
     img_list += create_img_list(split_img_dir)
-    print(img_list)
 
-
+    # mainloop
+    detect_dataset(img_list, entity_dir)
