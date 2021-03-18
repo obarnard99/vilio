@@ -315,7 +315,7 @@ def detect_dataset(img_list, output_dir, auto_break=20):
                 print('-' * 100)
 
 
-def create_img_list(img_dir, output_dir, split_size=30000, exclude_dir=None):
+def create_img_list(img_dir, output_dir='img_lists', split_size=30000, exclude_dir=None):
     """Creates text files of images to be processed."""
     if exclude_dir is not None:
         eimg_list = glob.glob(os.path.join(exclude_dir, '*.png'))
