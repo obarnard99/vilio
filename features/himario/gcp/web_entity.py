@@ -316,6 +316,7 @@ def detect_dataset(img_list, output_dir, auto_break=20):
 
 
 def create_img_list(img_dir, output_dir, split_size=30000, exclude_dir=None):
+    """Creates text files of images to be processed."""
     if exclude_dir is not None:
         eimg_list = glob.glob(os.path.join(exclude_dir, '*.png'))
         eimg_list += glob.glob(os.path.join(exclude_dir, '**', '*.png'))
@@ -325,12 +326,10 @@ def create_img_list(img_dir, output_dir, split_size=30000, exclude_dir=None):
 
     img_list = glob.glob(os.path.join(img_dir, '*.png'))
     img_list += glob.glob(os.path.join(img_dir, '**', '*.png'))
-    print(f"Find {len(img_list)} images")
-    img_list = [
-        im for im in img_list
-        if os.path.basename(im).split('.')[0] not in eimg_list
-    ]
-    print(f"Find {len(img_list)} images after filter")
+
+    print(f"Found {len(img_list)} images")
+    img_list = [im for im in img_list if os.path.basename(im).split('.')[0] not in eimg_list]
+    print(f"Found {len(img_list)} images after filter")
 
     os.makedirs(output_dir, exist_ok=True)
     dir_name = os.path.basename(img_dir)
@@ -339,7 +338,6 @@ def create_img_list(img_dir, output_dir, split_size=30000, exclude_dir=None):
         split = img_list[i: i + split_size]
         file_name = os.path.join(output_dir, f"{dir_name}_split.{j}.txt")
         with open(file_name, mode='w') as f:
-            # f.writelines(split)
             for l in split:
                 f.write(l + '\n')
 
