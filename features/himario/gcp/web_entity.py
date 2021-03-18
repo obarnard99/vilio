@@ -378,13 +378,17 @@ def create_description(json_dir='/home/ron/Downloads/hateful_meme_data/web_entit
     num_entity = []
 
     for k, d in json_map.items():
-        img_serach = {0: d['main']} if len(d['split']) == 0 else d['split']
+        img_search = {0: d['main']} if len(d['split']) == 0 else d['split']
         
-        for split_n, search in img_serach.items():
+        for split_n, search in img_search.items():
             if 'pagesWithMatchingImages' in search:
                 search_math[0] += 1
         #         print(main['webEntities'])
-                entity_name = [e['description'] for e in search['webEntities'] if 'description' in e]
+                try:
+                    entity_name = [e['description'] for e in search['webEntities'] if 'description' in e]
+                except:
+                    print(k, "has no web entities")
+                    raise Exception
                 if 'label' in search['bestGuessLabels'][0]:
                     entity_name += [search['bestGuessLabels'][0]['label']]
                 entity_name = [e for e in entity_name if e.lower() not in entity_black_list]
@@ -480,8 +484,8 @@ def link_noun_chunk(token, token_map, direction=None, depth=0, prev_token=None):
 
 nlp = spacy.load("en_core_web_lg")
 def extract_subject(titles):
-    # nlp = spacy.load("en_core_web_lg")
-    global nlp
+    #nlp = spacy.load("en_core_web_lg")
+    #global nlp
     entity_cnt = defaultdict(lambda: 0)
     token_maps = []
     
@@ -558,10 +562,12 @@ def extract_subject(titles):
 def titles_cleanup(img_entity_pickle, out_pickle=None):
     with open(img_entity_pickle, 'rb') as pf:
         imgs_web_entity = pickle.load(pf)
+    print(f'Loaded {img_entity_pickle}')
     title_map = imgs_web_entity['title_map']
     
     snlp = spacy.load("en_core_web_lg")
     snlp.add_pipe(LanguageDetector(), name="language_detector", last=True)
+    print('Loaded SpaCy')
 
     all_titles = []
     all_title_idx = []
@@ -574,12 +580,12 @@ def titles_cleanup(img_entity_pickle, out_pickle=None):
                 all_split_idx.append(n)
 
     assert len(all_titles) == len(all_title_idx), f"{len(all_titles)} != {len(all_title_idx)}"
-    
+     
     pipe = snlp.pipe(all_titles)
     clean_title_map = defaultdict(lambda: defaultdict(list))
     all_clean_title = []
     drop_by_lanu = 0
-
+    
     for i, doc in enumerate(pipe):
         if doc._.language['language'] != 'en':
             drop_by_lanu += 1
