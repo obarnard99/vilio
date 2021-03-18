@@ -63,7 +63,6 @@ entity_black_list = [
     'YouTube',
 ]
 entity_black_list = [e.lower() for e in entity_black_list]
-
 entity_white_list = [
     'disable',
     'disability',
@@ -72,7 +71,6 @@ entity_white_list = [
     'immigran',
     'handicapped',
 ]
-
 noun_chunk_blist = [
     'stock pictures',
     'stock picture',
@@ -116,6 +114,40 @@ noun_chunk_blist = [
     '- getty',
 ]
 noun_chunk_blist = sorted(noun_chunk_blist, key=lambda x: len(x), reverse=True)
+
+
+def create_img_list(img_dir, exclude_dir=None):
+    """Returns list of pngs in img dir."""
+    if exclude_dir is not None:
+        eimg_list = glob.glob(os.path.join(exclude_dir, '*.png'))
+        eimg_list += glob.glob(os.path.join(exclude_dir, '**', '*.png'))
+        eimg_list = [os.path.basename(ei).split('.')[0] for ei in eimg_list]
+    else:
+        eimg_list = []
+
+    img_list = glob.glob(os.path.join(img_dir, '*.png'))
+    img_list += glob.glob(os.path.join(img_dir, '**', '*.png'))
+
+    print(f"Found {len(img_list)} images")
+    img_list = [im for im in img_list if os.path.basename(im).split('.')[0] not in eimg_list]
+    print(f"Found {len(img_list)} images after filter")
+
+    return img_list
+
+
+def create_img_list_files(img_dir, output_dir='img_lists', split_size=30000, exclude_dir=None):
+    """Creates text files of images to be processed."""
+    img_list = create_img_list(img_dir, exclude_dir=exclude_dir)
+
+    os.makedirs(output_dir, exist_ok=True)
+    dir_name = os.path.basename(img_dir)
+
+    for j, i in enumerate(range(0, len(img_list), split_size)):
+        split = img_list[i: i + split_size]
+        file_name = os.path.join(output_dir, f"{dir_name}_split.{j}.txt")
+        with open(file_name, mode='w') as f:
+            for l in split:
+                f.write(l + '\n')
 
 
 def get_best_match(query, corpus, step=4, flex=3, case_sensitive=False, verbose=False):
@@ -313,33 +345,6 @@ def detect_dataset(img_list, output_dir, auto_break=20):
                         break
                 detect_image(line, json_path)
                 print('-' * 100)
-
-
-def create_img_list(img_dir, output_dir='img_lists', split_size=30000, exclude_dir=None):
-    """Creates text files of images to be processed."""
-    if exclude_dir is not None:
-        eimg_list = glob.glob(os.path.join(exclude_dir, '*.png'))
-        eimg_list += glob.glob(os.path.join(exclude_dir, '**', '*.png'))
-        eimg_list = [os.path.basename(ei).split('.')[0] for ei in eimg_list]
-    else:
-        eimg_list = []
-
-    img_list = glob.glob(os.path.join(img_dir, '*.png'))
-    img_list += glob.glob(os.path.join(img_dir, '**', '*.png'))
-
-    print(f"Found {len(img_list)} images")
-    img_list = [im for im in img_list if os.path.basename(im).split('.')[0] not in eimg_list]
-    print(f"Found {len(img_list)} images after filter")
-
-    os.makedirs(output_dir, exist_ok=True)
-    dir_name = os.path.basename(img_dir)
-
-    for j, i in enumerate(range(0, len(img_list), split_size)):
-        split = img_list[i: i + split_size]
-        file_name = os.path.join(output_dir, f"{dir_name}_split.{j}.txt")
-        with open(file_name, mode='w') as f:
-            for l in split:
-                f.write(l + '\n')
 
 
 def create_description(json_dir='/home/ron/Downloads/hateful_meme_data/web_entity_clean_all/', out_pickle=None):
@@ -894,7 +899,7 @@ if __name__ == "__main__":
     create_img_list --> detect_dataset --> create_description --> titles_cleanup 
     --> titles_summary  --> insert_anno_jsonl
     """
-
+    """
     with logger.catch(reraise=True):
         fire.Fire({
             'detect_web': detect_web,
@@ -906,3 +911,11 @@ if __name__ == "__main__":
             'titles_summary': titles_summary,
             'insert_anno_jsonl': insert_anno_jsonl,
         })
+    """
+    img_dir = ''
+    split_img_dir = ''
+    img_list = create_img_list(img_dir, exclude_dir=split_img_dir)
+    img_list += create_img_list(split_img_dir)
+    print(img_list)
+
+

@@ -3,13 +3,13 @@ FEATURE_DIR="$DATA_DIR/features"
 
 export GOOGLE_APPLICATION_CREDENTIALS="/home/miproj/4thyr.oct2020/ojrb2/uploads/f-mt126-1-e8ab23b3ed9a.json"
 
-python gcp/web_entity.py create_img_list \
+python gcp/web_entity.py create_img_list_files \
   $FEATURE_DIR/img_clean \
   $FEATURE_DIR/img_lists \
   --split_size 20000 \
   --exclude_dir $FEATURE_DIR/split_img_clean
 
-python gcp/web_entity.py create_img_list \
+python gcp/web_entity.py create_img_list_files \
   $FEATURE_DIR/split_img_clean \
   $FEATURE_DIR/img_lists \
   --split_size 20000
