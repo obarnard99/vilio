@@ -15,9 +15,9 @@ import numpy as np
 from bs4 import BeautifulSoup
 from spacy_langdetect import LanguageDetector
 from termcolor import colored
+from google.cloud import vision
 from google.protobuf.json_format import MessageToJson
 from PIL import Image
-
 
 entity_black_list = [
     'Stock photography',
@@ -64,7 +64,7 @@ entity_black_list = [
 ]
 entity_black_list = [e.lower() for e in entity_black_list]
 
-entity_white_list = [ 
+entity_white_list = [
     'disable',
     'disability',
     'down syndrome',
@@ -150,7 +150,7 @@ def get_best_match(query, corpus, step=4, flex=3, case_sensitive=False, verbose=
 
         m = 0
         while m + qlen - step <= len(corpus):
-            match_values.append(_match(query, corpus[m : m-1+qlen]))
+            match_values.append(_match(query, corpus[m: m - 1 + qlen]))
             if verbose:
                 print(query, "-", corpus[m: m + qlen], _match(query, corpus[m: m + qlen]))
             m += step
@@ -200,7 +200,7 @@ def get_best_match(query, corpus, step=4, flex=3, case_sensitive=False, verbose=
                 print("rl: -- value: %f -- snippet: %s" % (rl, corpus[p_l: p_r - f]))
                 print("rr: -- value: %f -- snippet: %s" % (rl, corpus[p_l: p_r + f]))
 
-        return bp_l, bp_r, _match(query, corpus[bp_l : bp_r])
+        return bp_l, bp_r, _match(query, corpus[bp_l: bp_r])
 
     if not case_sensitive:
         query = query.lower()
@@ -208,7 +208,7 @@ def get_best_match(query, corpus, step=4, flex=3, case_sensitive=False, verbose=
 
     qlen = len(query)
 
-    if flex >= qlen/2:
+    if flex >= qlen / 2:
         print("Warning: flex exceeds length of query / 2. Setting to default.")
         flex = 3
 
@@ -220,11 +220,9 @@ def get_best_match(query, corpus, step=4, flex=3, case_sensitive=False, verbose=
     return slice(pos_left, pos_right), match_value
 
 
-
 def detect_web(path):
-    from google.cloud import vision
     """Detects web annotations given an image."""
-    
+
     assert os.path.exists(path) and os.path.isfile(path)
     client = vision.ImageAnnotatorClient()
 
@@ -281,7 +279,7 @@ def detect_web(path):
             '{}\nFor more info on error messages, check: '
             'https://cloud.google.com/apis/design/errors'.format(
                 response.error.message))
-    
+
     return annotations
 
 
@@ -300,7 +298,7 @@ def detect_dataset(img_list, output_dir, auto_break=20):
             line = line.replace('\n', '')
             assert os.path.exists(line)
             print(f"[{i}] {line}")
-            
+
             img_name = os.path.basename(line)
             json_name = img_name.replace('.jpg', '').replace('.png', '') + '.json'
             json_path = os.path.join(output_dir, json_name)
@@ -333,12 +331,12 @@ def create_img_list(img_dir, output_dir, split_size=30000, exclude_dir=None):
         if os.path.basename(im).split('.')[0] not in eimg_list
     ]
     print(f"Find {len(img_list)} images after filter")
-    
+
     os.makedirs(output_dir, exist_ok=True)
     dir_name = os.path.basename(img_dir)
-    
+
     for j, i in enumerate(range(0, len(img_list), split_size)):
-        split = img_list[i: i+split_size]
+        split = img_list[i: i + split_size]
         file_name = os.path.join(output_dir, f"{dir_name}_split.{j}.txt")
         with open(file_name, mode='w') as f:
             # f.writelines(split)
@@ -370,7 +368,7 @@ def create_description(json_dir='/home/ron/Downloads/hateful_meme_data/web_entit
         except Exception as e:
             print(i, j, e)
             continue
-    
+
     search_math = [0, 0]
     entity_map = defaultdict(lambda: {})
     title_map = defaultdict(lambda: {})
@@ -379,11 +377,11 @@ def create_description(json_dir='/home/ron/Downloads/hateful_meme_data/web_entit
 
     for k, d in json_map.items():
         img_search = {0: d['main']} if len(d['split']) == 0 else d['split']
-        
+
         for split_n, search in img_search.items():
             if 'pagesWithMatchingImages' in search:
                 search_math[0] += 1
-        #         print(main['webEntities'])
+                #         print(main['webEntities'])
                 try:
                     entity_name = [e['description'] for e in search['webEntities'] if 'description' in e]
                 except:
@@ -397,10 +395,10 @@ def create_description(json_dir='/home/ron/Downloads/hateful_meme_data/web_entit
                     for page in search['pagesWithMatchingImages']
                     if 'pageTitle' in page
                 ]
-                
+
                 entity_map[k][split_n] = entity_name
                 title_map[k][split_n] = titles
-                
+
                 ent_count = Counter(entity_name)
                 count_entity.update(ent_count)
                 num_entity.append(len(entity_name))
@@ -409,7 +407,7 @@ def create_description(json_dir='/home/ron/Downloads/hateful_meme_data/web_entit
 
     num_entity = Counter(num_entity)
 
-    with open(out_pickle, mode='wb') as pf: 
+    with open(out_pickle, mode='wb') as pf:
         pickle.dump({
             'entity_map': dict(entity_map),
             'title_map': dict(title_map),
@@ -426,7 +424,7 @@ def sent_cluster(roberta, embed_titles):
     norm = np.linalg.norm(embed, keepdims=True, axis=1)
     mtx_norm = np.matmul(norm, norm.T)
     mtx_cos = np.matmul(embed, embed.T) / mtx_norm
-    
+
     cluster_mark = [-1] * len(embed_titles)
     cluster_cnt = 0
     for i, row in enumerate(mtx_cos):
@@ -440,7 +438,7 @@ def sent_cluster(roberta, embed_titles):
     cus_size = Counter(filter(lambda x: x >= 0, cluster_mark))
     cluster_id, _ = cus_size.most_common(1)[0]
     print(cluster_id, _)
-    
+
     gather_sent = [t for t, c in zip(embed_titles, cluster_mark) if c == cluster_id]
     return gather_sent
 
@@ -448,7 +446,7 @@ def sent_cluster(roberta, embed_titles):
 def link_noun_chunk(token, token_map, direction=None, depth=0, prev_token=None):
     if depth > 3:
         return []
-    
+
     tk = token
     print(
         list(tk.children),
@@ -462,38 +460,40 @@ def link_noun_chunk(token, token_map, direction=None, depth=0, prev_token=None):
     if direction is None:
         if tk.dep_ in ['compound', 'amod', 'poss', 'part']:
             if tk.head.pos_ in ['ADJ', 'NOUN', 'PROPN', 'PART']:
-                token_link += link_noun_chunk(tk.head, token_map, direction='head', depth=depth+1, prev_token=tk)
+                token_link += link_noun_chunk(tk.head, token_map, direction='head', depth=depth + 1, prev_token=tk)
         if tk.children:
             for c in tk.children:
                 if c.dep_ in ['poss', 'probj', 'amod', 'compound']:
-                    token_link += link_noun_chunk(c, token_map, direction='child', depth=depth+1, prev_token=tk)
-                    
+                    token_link += link_noun_chunk(c, token_map, direction='child', depth=depth + 1, prev_token=tk)
+
     else:
         if tk.dep_ != 'ROOT' and direction == 'head':
             if tk.pos_ == 'ADP' and tk.dep_ == 'prep':
-                token_link += link_noun_chunk(tk.head, token_map, direction='head', depth=depth+1, prev_token=tk)
+                token_link += link_noun_chunk(tk.head, token_map, direction='head', depth=depth + 1, prev_token=tk)
             elif tk.dep_ in ['compound', 'dep', 'amod', 'poss', 'part']:
-                token_link += link_noun_chunk(tk.head, token_map, direction='head', depth=depth+1, prev_token=tk)
-        
+                token_link += link_noun_chunk(tk.head, token_map, direction='head', depth=depth + 1, prev_token=tk)
+
         if tk.children:
             for c in tk.children:
                 if c.dep_ in ['poss', 'compound'] and c != prev_token:
-                    token_link += link_noun_chunk(c, token_map, direction='child', depth=depth+1, prev_token=tk)
+                    token_link += link_noun_chunk(c, token_map, direction='child', depth=depth + 1, prev_token=tk)
     return token_link
 
 
 nlp = spacy.load("en_core_web_lg")
+
+
 def extract_subject(titles):
-    #nlp = spacy.load("en_core_web_lg")
-    #global nlp
+    # nlp = spacy.load("en_core_web_lg")
+    # global nlp
     entity_cnt = defaultdict(lambda: 0)
     token_maps = []
-    
+
     for title in titles:
         doc = nlp(title)
         entity2chunk = defaultdict(list)
         token_map = {}
-        
+
         for token in doc:
             if len(token.text) == 1:
                 continue
@@ -503,16 +503,16 @@ def extract_subject(titles):
                 token_map[token.text] = token
         print(dict(entity2chunk))
         token_maps.append(token_map)
-    
+
     print(dict(entity_cnt))
     entity_cnt_list = sorted(list(entity_cnt.items()), key=lambda x: x[1], reverse=True)
     select_subject = [w for w, c in entity_cnt_list[:2]]
-    
+
     result_noun_chunks = []
     subj_chunks = []
-    
+
     for token_map in token_maps:
-        
+
         for subj in select_subject:
             try:
                 result = link_noun_chunk(token_map[subj], token_map)
@@ -521,7 +521,7 @@ def extract_subject(titles):
             except KeyError:
                 pass
             print('-' * 100)
-        
+
     if len(subj_chunks) > 1:
         cluster_mark = [-1] * len(subj_chunks)
         for i in range(0, len(subj_chunks)):
@@ -542,7 +542,7 @@ def extract_subject(titles):
         result_noun_chunks += unify_chunks
     else:
         result_noun_chunks += subj_chunks
-    
+
     """
     Gather reuslt
     """
@@ -564,7 +564,7 @@ def titles_cleanup(img_entity_pickle, out_pickle=None):
         imgs_web_entity = pickle.load(pf)
     print(f'Loaded {img_entity_pickle}')
     title_map = imgs_web_entity['title_map']
-    
+
     snlp = spacy.load("en_core_web_lg")
     snlp.add_pipe(LanguageDetector(), name="language_detector", last=True)
     print('Loaded SpaCy')
@@ -580,17 +580,17 @@ def titles_cleanup(img_entity_pickle, out_pickle=None):
                 all_split_idx.append(n)
 
     assert len(all_titles) == len(all_title_idx), f"{len(all_titles)} != {len(all_title_idx)}"
-     
+
     pipe = snlp.pipe(all_titles)
     clean_title_map = defaultdict(lambda: defaultdict(list))
     all_clean_title = []
     drop_by_lanu = 0
-    
+
     for i, doc in enumerate(pipe):
         if doc._.language['language'] != 'en':
             drop_by_lanu += 1
             continue
-        
+
         id = all_title_idx[i]
         senten = ''
         for token in doc:
@@ -600,17 +600,17 @@ def titles_cleanup(img_entity_pickle, out_pickle=None):
             senten = re.sub(b, '', senten)
         for b in entity_black_list:
             senten = re.sub(b, '', senten)
-        
+
         n_split = all_split_idx[i]
         # if len(clean_title_map[id]) < n_split + 1:
         #     clean_title_map[id] += [[] for _ in range(n_split + 1 - len(clean_title_map[id]))]
         clean_title_map[id][n_split].append(senten)
         all_clean_title.append(senten)
-        
+
     imgs_web_entity['clean_title_map'] = dict(clean_title_map)
     if out_pickle is None:
         out_pickle = img_entity_pickle
-    with open(out_pickle, mode='wb') as pf: 
+    with open(out_pickle, mode='wb') as pf:
         pickle.dump(imgs_web_entity, pf)
 
 
@@ -630,6 +630,7 @@ def remove_duplicate(titles):
     filtered = [t for d, t in zip(dup, titles) if not d]
     return filtered
 
+
 def _apply_summary(args):
     id, n_split, titles = args
     print(colored(id, color='green'))
@@ -639,6 +640,7 @@ def _apply_summary(args):
     # title_summaries[id] = result_noun_chunks
     print('result_sent: ', result_noun_chunks)
     return id, n_split, result_noun_chunks
+
 
 def titles_summary(img_entity_pickle, out_pickle):
     with open(img_entity_pickle, 'rb') as pf:
@@ -659,16 +661,15 @@ def titles_summary(img_entity_pickle, out_pickle):
             title_summaries[id][n_split] = summary
     imgs_web_entity['title_summaries'] = title_summaries
 
-    with open(out_pickle, mode='wb') as pf: 
+    with open(out_pickle, mode='wb') as pf:
         pickle.dump(imgs_web_entity, pf)
 
 
 def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_json, img_dir='/meme_data/img'):
-
     def refine_split_box(boxes, img_name):
         img_path = os.path.join(img_dir, img_name)
         w, h = Image.open(img_path).size
-        
+
         if len(boxes) > 1:
             direction = None
 
@@ -677,7 +678,7 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
                 boxes = sorted(boxes, key=lambda x: x[0])
                 for j in range(len(boxes) - 1):
                     boxes[j + 1][0] = boxes[j][2] = (boxes[j][2] + boxes[j + 1][0]) / 2
-                
+
                 boxes[0][0] = 0
                 boxes[-1][2] = w
                 for j in range(len((boxes))):
@@ -688,7 +689,7 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
                 boxes = sorted(boxes, key=lambda x: x[1])
                 for j in range(len(boxes) - 1):
                     boxes[j][3] = boxes[j + 1][1] = (boxes[j][3] + boxes[j + 1][1]) / 2
-            
+
                 boxes[0][1] = 0
                 boxes[-1][3] = h
                 for j in range(len((boxes))):
@@ -697,20 +698,19 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
             return boxes
         else:
             return [[0, 0, w, h, 1.0]]
-            
-    
+
     def box_coverage(img_box, ocr_box):
         w = ocr_box[2] - ocr_box[0]
         h = ocr_box[3] - ocr_box[1]
         ocr_l_to_img_r = max(min(img_box[2] - ocr_box[0], w), 0)
         ocr_r_to_img_l = max(min(ocr_box[2] - img_box[0], w), 0)
         cover_w = min(ocr_l_to_img_r, ocr_r_to_img_l)
-        
+
         ocr_t_to_img_b = max(min(img_box[3] - ocr_box[1], h), 0)
         ocr_b_to_img_t = max(min(ocr_box[3] - img_box[1], h), 0)
         cover_h = min(ocr_t_to_img_b, ocr_b_to_img_t)
         return (cover_h * cover_w) / (w * h)
-        
+
     def merge_ocr_boxes(ocr_boxes):
         raise NotImplementedError
 
@@ -721,7 +721,7 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
             box_id_pair.append((i, box))
             font_height.append(box[3] - box[1])
         font_size = sum(font_height) / len(font_height)
-        
+
         box_by_x = sorted(ocr_boxes, lambda box_info: box_info[0][0])
         box_by_xy = sorted(box_by_x, lambda box_info: box_info[0][1])
         box_by_y = sorted(ocr_boxes, lambda box_info: box_info[0][1])
@@ -731,19 +731,19 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
         for i in range(ln - 1):
             box_by_xy[i]
             box_by_xy[i + 1]
-    
+
     def find_appearence(meme_txt, ocr_boxes, img_boxes):
         box_by_x = sorted(ocr_boxes, key=lambda box_info: box_info[0][0])
         box_by_xy = sorted(box_by_x, key=lambda box_info: box_info[0][1])
         ocr_to_img_box = []
-        
+
         for i, box_info in enumerate(box_by_xy):
             box, txt, score = box_info
             imbox_cover = [box_coverage(im, box) for im in img_boxes]
             argmax = imbox_cover.index(max(imbox_cover))
             ocr_to_img_box.append(argmax)
         print('ocr_to_img_box: ', ocr_to_img_box)
-        
+
         for i, box_info in enumerate(box_by_xy):
             box, txt, score = box_info
             match_slice, match_score = get_best_match(txt, meme_txt, step=2, flex=4)
@@ -771,10 +771,10 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
                 continue
             elif match_score < 0.6:
                 continue
-            
+
             for j in range(match_slice.start, min(match_slice.stop, len(meme_txt))):
                 char_to_img_box[j] = ocr_to_img_box[i]
-            
+
             if i < len(box_by_xy) - 1:
                 next_slice = box_by_xy[i - 1][3]
                 for j in range(match_slice.stop, next_slice.start):
@@ -804,27 +804,26 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
                         else:
                             char_to_img_box[j] = prev_img_id
                     #     raise RuntimeError(f'!? {prev_img_id}, {next_img_id}')
-                
-        
+
         print(char_to_img_box)
         print('-' * 100)
         return char_to_img_box
-    
+
     meme_anno = []
-    
+
     with open(anno_json, 'r') as f:
         for line in f:
             meme_anno.append(json.loads(line))
-    
+
     with open(img_entity_pickle, 'rb') as pf:
         imgs_web_entity = pickle.load(pf)
-    
+
     with open(split_boxes_json, 'r') as f:
         image_split_annos = json.load(f)
-    
+
     with open(ocr_boxes_json, 'r') as f:
         ocr_anno = json.load(f)
-    
+
     title_summaries = imgs_web_entity['title_summaries']
     entity_map = imgs_web_entity['entity_map']
 
@@ -835,7 +834,7 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
         image_boxes = image_split_annos[img_name]
         image_boxes = refine_split_box(image_boxes, img_name)
         ocr_boxes = ocr_anno[img_name]
-        
+
         if len(image_boxes) > 1:
             logger.info(img_name)
             char_to_img_box = find_appearence(anno['text'], ocr_boxes, image_boxes)
@@ -869,7 +868,7 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
         #             entitys += [' '.join(s) for s in web_page_summaries]
         #     anno['partition_description'].append(entitys)
         # assert len(anno['image_partition']) == len(image_boxes), F"{img_name}"
-        
+
         anno['image_partition'] = image_boxes
         for sn in range(len(image_boxes)):
             if sn in img_entitys_splits:
@@ -882,7 +881,7 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
                     web_page_summaries = summaries_splits[sn]
                     entitys += [' '.join(s) for s in web_page_summaries]
             anno['partition_description'].append(entitys)
-    
+
     out_path = anno_json.replace('.json', '.entity.json')
     with open(out_path, 'w') as f:
         for anno_line in meme_anno:
@@ -892,11 +891,12 @@ def insert_anno_jsonl(img_entity_pickle, anno_json, split_boxes_json, ocr_boxes_
 
 if __name__ == "__main__":
     from loguru import logger
+
     """
     create_img_list --> detect_dataset --> create_description --> titles_cleanup 
     --> titles_summary  --> insert_anno_jsonl
     """
-    
+
     with logger.catch(reraise=True):
         fire.Fire({
             'detect_web': detect_web,
