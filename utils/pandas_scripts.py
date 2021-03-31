@@ -96,4 +96,4 @@ def clean_data(data_path="./data", img_path="./data", force=False):
 
 
 if __name__ == '__main__':
-    clean_data(data_path='/home/miproj/4thyr.oct2020/ojrb2/vilio/data/annotations', img_path='/home/miproj/4thyr.oct2020/ojrb2/vilio/data', force=True)
+    clean_data(data_path=r'C:\Users\obarn\Projects\F-MT126-1\vilio\data\features\annotations', img_path=r'C:\Users\obarn\Projects\F-MT126-1\data\hmc_unseen', force=True)
