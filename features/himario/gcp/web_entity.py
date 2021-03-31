@@ -117,7 +117,6 @@ noun_chunk_blacklist = [
 ]
 noun_chunk_blacklist = sorted(noun_chunk_blacklist, key=lambda x: len(x), reverse=True)
 
-
 nlp = spacy.load("en_core_web_lg")
 
 
@@ -619,7 +618,6 @@ def summarise_titles(title_map, save=None):
 
 
 def insert_anno_jsonl(title_summaries, entity_map, anno_json, split_boxes_json, ocr_boxes_json, img_dir):
-
     def refine_split_box(boxes, img_name):
         img_path = os.path.join(img_dir, img_name)
         w, h = Image.open(img_path).size
@@ -868,9 +866,9 @@ if __name__ == "__main__":
 
     # clean data
 
-
     # insert features
-    for anno in ["train", "test_unseen", "test_seen", "dev_unseen", "dev_seen", "dev_all", "pretrain", "trainlarge", "traindev"]:
+    for anno in ["train", "test_unseen", "test_seen", "dev_unseen", "dev_seen", "dev_all", "pretrain", "trainlarge",
+                 "traindev"]:
         print(f'Inserting features into {anno}.jsonl')
         insert_anno_jsonl(summaries,
                           entities,

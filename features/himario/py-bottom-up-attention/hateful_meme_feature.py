@@ -298,7 +298,7 @@ def oid_boxes(json_path, dataset_root, output_path, augment=False, random_seed=N
         
         # NOTE: using super resolution image
         img_path = os.path.join(dataset_root, 'img_clean', img_name)
-        if not os.path.exists(img_path) or True:
+        if not os.path.exists(img_path) or True:  # TODO: Always true
             img_path = os.path.join(dataset_root, 'img', img_name)
         logger.warning(f"Loading image from: {img_path}")
         im = cv2.imread(img_path)

@@ -177,7 +177,7 @@ def load_obj_tsv(fname, ids, topk=args.topk):
     :param topk: Only load features for top K images (lines) in the tsv file.
         Will load all the features if topk is either -1 or None.
     :return: A list of image object features where each feature is a dict.
-        See FILENAMES above for the keys in the feature dict.
+        See FIELDNAMES above for the keys in the feature dit.
     """
     data = []
     start_time = time.time()
