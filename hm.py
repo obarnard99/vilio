@@ -16,11 +16,11 @@ else:
 from src.vilio.transformers.optimization import AdamW, get_linear_schedule_with_warmup
 from utils.pandas_scripts import clean_data
 
-from entry.entryU import ModelU
+from models.U import ModelU
 from entry.entryX import ModelX
 from entry.entryV import ModelV
 from entry.entryD import ModelD
-from entry.entryO import ModelO
+from models.O import ModelO
 
 # Two different SWA Methods - https://pytorch.org/blog/pytorch-1.6-now-includes-stochastic-weight-averaging/
 if args.swa:
