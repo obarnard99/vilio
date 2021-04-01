@@ -37,7 +37,8 @@ parser.add_argument('--weight', default='vg', type=str,
 
 parser.add_argument('--minboxes', default=50, type=int, help='minboxes')
 parser.add_argument('--maxboxes', default=50, type=int, help='maxboxes')
-parser.add_argument('--dataroot', default='./data/', type=str, help="Path to data root; expects an img folder in the root")
+parser.add_argument('--dataroot', default='./data/', type=str, help="Path to data root")
+
 
 args = parser.parse_args()
 
@@ -317,7 +318,7 @@ if __name__ == "__main__":
     pathXid = load_image_ids(DATA_ROOT, args.split)     # Get paths and ids
     detector = build_model()
     
-    output_path = os.path.join(args.dataroot, './hm_{}{}{}.tsv'.format(args.weight, args.minboxes, args.maxboxes))
+    output_path = os.path.join(args.dataroot, 'tsv_clean/hm_{}{}{}_clean.tsv'.format(args.weight, args.minboxes, args.maxboxes))
     extract_feat(output_path, detector, pathXid)
 
 ## NOTES:
