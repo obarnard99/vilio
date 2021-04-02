@@ -12,12 +12,12 @@ python pretrain_bertO.py \
            --train pretrain \
            --tsv \
            --num_features 50 \
-           --features ./data/features/tsv/hm_vgattr5050.tsv \
+           --features ./data/features/tsv_clean/hm_vgattr5050_clean.tsv \
            --tr bert-large-uncased \
            --batchSize 8 \
            --lr 0.25e-5 \
            --epochs 8 \
-           --loadpre ./data/pytorch_model.bin \
+           --loadpre ./data/models/pytorch_model.bin \
            --topk $topk
 
 python hm.py \
@@ -32,8 +32,8 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
-           --features ./data/features/tsv/hm_vgattr5050.tsv \
-           --loadpre ./data/LAST_BO.pth \
+           --features ./data/features/tsv_clean/hm_vgattr5050_clean.tsv \
+           --loadpre ./data/models/LAST_BO.pth \
            --contrib \
            --exp O50 \
            --topk $topk
@@ -50,8 +50,8 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
-           --features ./data/features/tsv/hm_vgattr5050.tsv \
-           --loadpre ./data/LAST_BO.pth \
+           --features ./data/features/tsv_clean/hm_vgattr5050_clean.tsv \
+           --loadpre ./data/models/LAST_BO.pth \
            --contrib \
            --exp O50 \
            --topk $topk
@@ -66,7 +66,7 @@ python pretrain_bertO.py \
            --train pretrain \
            --tsv \
            --num_features 50 \
-           --features ./data/features/tsv/hm_vg5050.tsv \
+           --features ./data/features/tsv_clean/hm_vg5050_clean.tsv \
            --tr bert-large-uncased \
            --batchSize 8 \
            --lr 0.25e-5 \
@@ -86,8 +86,8 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
-           --features ./data/features/tsv/hm_vg5050.tsv \
-           --loadpre ./data/LAST_BO.pth \
+           --features ./data/features/tsv_clean/hm_vg5050_clean.tsv \
+           --loadpre ./data/models/LAST_BO.pth \
            --contrib \
            --exp OV50 \
            --topk $topk
@@ -104,8 +104,8 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
-           --features ./data/features/tsv/hm_vg5050.tsv \
-           --loadpre ./data/LAST_BO.pth \
+           --features ./data/features/tsv_clean/hm_vg5050_clean.tsv \
+           --loadpre ./data/models/LAST_BO.pth \
            --contrib \
            --exp OV50 \
            --topk $topk
@@ -119,12 +119,12 @@ python pretrain_bertO.py \
            --train pretrain \
            --tsv \
            --num_features 36 \
-           --features ./data/features/tsv/hm_vgattr3636.tsv \
+           --features ./data/features/tsv_clean/hm_vgattr3636_clean.tsv \
            --tr bert-large-uncased \
            --batchSize 8 \
            --lr 0.25e-5 \
            --epochs 8 \
-           --loadpre ./data/pytorch_model.bin \
+           --loadpre ./data/models/pytorch_model.bin \
            --topk $topk
 
 python hm.py \
@@ -139,8 +139,8 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 36 \
-           --features ./data/features/tsv/hm_vgattr3636.tsv \
-           --loadpre ./data/LAST_BO.pth \
+           --features ./data/features/tsv_clean/hm_vgattr3636_clean.tsv \
+           --loadpre ./data/models/LAST_BO.pth \
            --contrib \
            --exp O36 \
            --topk $topk
@@ -157,8 +157,8 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 36 \
-           --features ./data/features/tsv/hm_vgattr3636.tsv \
-           --loadpre ./data/LAST_BO.pth \
+           --features ./data/features/tsv_clean/hm_vgattr3636_clean.tsv \
+           --loadpre ./data/models/LAST_BO.pth \
            --contrib \
            --exp O36 \
            --topk $topk

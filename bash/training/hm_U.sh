@@ -17,11 +17,11 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
-           --features ./data/features/tsv/hm_vgattr5050.tsv \
-           --loadpre ./data/uniter-large.pt \
+           --features ./data/features/tsv_clean/hm_vgattr5050_clean.tsv \
+           --loadpre ./data/models/uniter-large.pt \
            --num_pos 6 \
            --contrib \
-           --exp U50 \
+           --exp U50c \
            --topk $topk \
 
 python hm.py \
@@ -36,11 +36,11 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
-           --features ./data/features/tsv/hm_vgattr5050.tsv \
-           --loadpre ./data/uniter-large.pt \
+           --features ./data/features/tsv_clean/hm_vgattr5050_clean.tsv \
+           --loadpre ./data/models/uniter-large.pt \
            --num_pos 6 \
            --contrib \
-           --exp U50 \
+           --exp U50c \
            --topk $topk \
 
 # 72 Feats, Seed 86
@@ -56,11 +56,11 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 72 \
-           --features ./data/features/tsv/hm_vgattr7272.tsv \
-           --loadpre ./data/uniter-large.pt \
+           --features ./data/features/tsv_clean/hm_vgattr7272_clean.tsv \
+           --loadpre ./data/models/uniter-large.pt \
            --num_pos 6 \
            --contrib \
-           --exp U72 \
+           --exp U72c \
            --topk $topk \
 
 python hm.py \
@@ -75,11 +75,11 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 72 \
-           --features ./data/features/tsv/hm_vgattr7272.tsv \
-           --loadpre ./data/uniter-large.pt \
+           --features ./data/features/tsv_clean/hm_vgattr7272_clean.tsv \
+           --loadpre ./data/models/uniter-large.pt \
            --num_pos 6 \
            --contrib \
-           --exp U72 \
+           --exp U72c \
            --topk $topk \
 
 
@@ -96,11 +96,11 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 36 \
-           --features ./data/features/tsv/hm_vgattr3636.tsv \
-           --loadpre ./data/uniter-large.pt \
+           --features ./data/features/tsv_clean/hm_vgattr3636_clean.tsv \
+           --loadpre ./data/models/uniter-large.pt \
            --num_pos 6 \
            --contrib \
-           --exp U36 \
+           --exp U36c \
            --topk $topk \
 
 python hm.py \
@@ -115,10 +115,10 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 36 \
-           --features ./data/features/tsv/hm_vgattr3636.tsv \
-           --loadpre ./data/uniter-large.pt \
+           --features ./data/features/tsv_clean/hm_vgattr3636_clean.tsv \
+           --loadpre ./data/models/uniter-large.pt \
            --num_pos 6 \
            --contrib \
-           --exp U36 \
+           --exp U36c \
            --topk $topk \
 
