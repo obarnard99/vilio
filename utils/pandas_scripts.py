@@ -4,7 +4,6 @@ import os
 
 from PIL import Image
 import imagehash
-import fire
 
 
 # Image hash functions: 
