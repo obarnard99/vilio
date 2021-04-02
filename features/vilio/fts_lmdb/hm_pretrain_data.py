@@ -54,7 +54,7 @@ class LXMERTTorchDataset(Dataset):
         # Loading datasets to data
         self.data = []
         for split in self.splits:
-            path = os.path.join("./data/", f"{split}.jsonl")
+            path = os.path.join(args.anno_dir, f"{split}.jsonl")
             self.data.extend(
                     [json.loads(jline) for jline in open(path, "r").read().split('\n') if jline != ""]
             )

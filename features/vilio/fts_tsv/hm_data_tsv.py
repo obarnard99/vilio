@@ -21,7 +21,7 @@ class HMDataset(Dataset):
 
 
 class HMTorchDataset(Dataset):
-    def __init__(self, splits, feature_path="data/HM_img.tsv"):
+    def __init__(self, splits, feature_path=args.features):
         super().__init__()
         self.name = splits
         self.splits = splits.split(",")
@@ -29,7 +29,7 @@ class HMTorchDataset(Dataset):
         # Loading datasets to data
         self.raw_data = []
         for split in self.splits:
-            path = os.path.join("data/", f"{split}.jsonl")
+            path = os.path.join(args.anno_dir, f"{split}.jsonl")
             self.raw_data.extend(
                 [json.loads(jline) for jline in open(path, "r").read().split('\n') if jline != ""]
             )

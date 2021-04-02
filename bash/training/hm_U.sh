@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# Allows for quick test runs - Set topk to e.g. 20 & midsave to 5
-topk=-1
-
+# Constants
+DATA_DIR="/home/miproj/4thyr.oct2020/ojrb2/vilio/data"
+FEATURE_DIR="$DATA_DIR/features"
+MODEL_DIR="$DATA_DIR/models"
+ANNO_DIR="$FEATURE_DIR/annotations"
+topk=-1  # Allows for quick test runs - Set topk to e.g. 20 & midsave to 5
 
 # 50 Feats, Seed 43
 python hm.py \
@@ -17,8 +20,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
-           --features ./data/features/tsv_clean/hm_vgattr5050_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr5050_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U50c \
@@ -36,8 +40,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
-           --features ./data/features/tsv_clean/hm_vgattr5050_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr5050_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U50c \
@@ -56,8 +61,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 72 \
-           --features ./data/features/tsv_clean/hm_vgattr7272_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr7272_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U72c \
@@ -75,8 +81,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 72 \
-           --features ./data/features/tsv_clean/hm_vgattr7272_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr7272_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U72c \
@@ -96,8 +103,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 36 \
-           --features ./data/features/tsv_clean/hm_vgattr3636_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr3636_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U36c \
@@ -115,8 +123,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 36 \
-           --features ./data/features/tsv_clean/hm_vgattr3636_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr3636_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U36c \
@@ -136,8 +145,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 5 \
-           --features ./data/features/tsv_clean/hm_vgattr55_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr55_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U36c \
@@ -155,8 +165,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 5 \
-           --features ./data/features/tsv_clean/hm_vgattr55_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr55_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U36c \
@@ -176,8 +187,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 10 \
-           --features ./data/features/tsv_clean/hm_vgattr1010_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr1010_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U36c \
@@ -195,8 +207,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 10 \
-           --features ./data/features/tsv_clean/hm_vgattr1010_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr1010_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U36c \
@@ -216,8 +229,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 15 \
-           --features ./data/features/tsv_clean/hm_vgattr1515_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr1515_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U36c \
@@ -235,8 +249,9 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 15 \
-           --features ./data/features/tsv_clean/hm_vgattr1515_clean.tsv \
-           --loadpre ./data/models/uniter-large.pt \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr1515_clean.tsv \
+           --loadpre $MODEL_DIR/uniter-large.pt \
+           --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
            --exp U36c \
