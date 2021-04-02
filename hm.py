@@ -9,9 +9,9 @@ from tqdm import tqdm
 from param import args
 
 if args.tsv:
-    from fts_tsv.hm_data_tsv import HMTorchDataset, HMEvaluator, HMDataset
+    from features.vilio.fts_tsv.hm_data_tsv import HMTorchDataset, HMEvaluator, HMDataset
 else:
-    from fts_lmdb.hm_data import HMTorchDataset, HMEvaluator, HMDataset
+    from features.vilio.fts_lmdb.hm_data import HMTorchDataset, HMEvaluator, HMDataset
 
 from src.vilio.transformers.optimization import AdamW, get_linear_schedule_with_warmup
 from utils.pandas_scripts import clean_data
