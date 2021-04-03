@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Constants
+topk=-1  # Allows for quick test runs - Set topk to e.g. 20 & midsave to 5
 DATA_DIR="/home/miproj/4thyr.oct2020/ojrb2/vilio/data"
 FEATURE_DIR="$DATA_DIR/features"
 MODEL_DIR="$DATA_DIR/models"
 ANNO_DIR="$FEATURE_DIR/annotations"
-topk=-1  # Allows for quick test runs - Set topk to e.g. 20 & midsave to 5
 
 # 50 Feats, Seed 43
 python hm.py \
@@ -150,7 +150,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U36c \
+           --exp U5c \
            --topk $topk \
 
 python hm.py \
@@ -170,7 +170,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U36c \
+           --exp U5c \
            --topk $topk \
 
 
@@ -192,7 +192,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U36c \
+           --exp U10c \
            --topk $topk \
 
 python hm.py \
@@ -212,7 +212,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U36c \
+           --exp U10c \
            --topk $topk \
 
 
@@ -234,7 +234,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U36c \
+           --exp U15c \
            --topk $topk \
 
 python hm.py \
@@ -254,5 +254,5 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U36c \
+           --exp U15c \
            --topk $topk \
