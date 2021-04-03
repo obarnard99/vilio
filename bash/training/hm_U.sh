@@ -25,7 +25,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U50c \
+           --exp U50ac \
            --topk $topk \
 
 python hm.py \
@@ -45,7 +45,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U50c \
+           --exp U50ac \
            --topk $topk \
 
 # 72 Feats, Seed 86
@@ -66,7 +66,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U72c \
+           --exp U72ac \
            --topk $topk \
 
 python hm.py \
@@ -86,7 +86,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U72c \
+           --exp U72ac \
            --topk $topk \
 
 
@@ -108,7 +108,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U36c \
+           --exp U36ac \
            --topk $topk \
 
 python hm.py \
@@ -128,7 +128,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U36c \
+           --exp U36ac \
            --topk $topk \
 
 
@@ -150,7 +150,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U5c \
+           --exp U5ac \
            --topk $topk \
 
 python hm.py \
@@ -170,7 +170,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U5c \
+           --exp U5ac \
            --topk $topk \
 
 
@@ -192,7 +192,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U10c \
+           --exp U10ac \
            --topk $topk \
 
 python hm.py \
@@ -212,7 +212,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U10c \
+           --exp U10ac \
            --topk $topk \
 
 
@@ -234,7 +234,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U15c \
+           --exp U15ac \
            --topk $topk \
 
 python hm.py \
@@ -254,5 +254,5 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U15c \
+           --exp U15ac \
            --topk $topk \
