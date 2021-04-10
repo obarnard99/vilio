@@ -51,7 +51,7 @@ python hm.py \
            --tsv \
            --num_features $NUM_FEATS \
            --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
-           --loadpre $DATA_DIR/LAST_BO.pth \
+           --loadpre $DATA_DIR/LAST_$EXP.pth \
            --anno_dir $ANNO_DIR \
            --contrib \
            --exp $EXP \
@@ -72,7 +72,7 @@ python hm.py \
            --tsv \
            --num_features $NUM_FEATS \
            --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
-           --loadpre $DATA_DIR/LAST_BO.pth \
+           --loadpre $DATA_DIR/LAST_$EXP.pth \
            --anno_dir $ANNO_DIR \
            --contrib \
            --exp $EXP \

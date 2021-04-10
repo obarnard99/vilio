@@ -377,12 +377,12 @@ class LXMERT:
             if epoch == 5:
                 self.save("Epoch%02d" % (epoch+1))
 
-        self.save("LAST")
+        self.save("LAST_" + args.exp)
 
 
     def save(self, name):
         torch.save(self.model.state_dict(),
-                   os.path.join(args.output, "%s_BO.pth" % name))
+                   os.path.join(args.output, f"{name}.pth"))
 
     def load(self, path):
         print("Load BERT extractor from %s" % path)
