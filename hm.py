@@ -257,7 +257,7 @@ class HM:
             if args.contrib:
                 self.optim.swap_swa_sgd()
 
-        self.save("LAST" + args.train)
+        self.save("LAST" + args.train + args.exp)
 
     def predict(self, eval_tuple: DataTuple, dump=None, out_csv=True):
 
@@ -360,7 +360,7 @@ def main():
 
         # If we also test afterwards load the last model
         if args.test is not None:
-            hm.load(os.path.join(hm.output, "LAST" + args.train + ".pth"))
+            hm.load(os.path.join(hm.output, "LAST" + args.train + args.exp + ".pth"))
 
     if args.test is not None:
         # We can specify multiple test args e.g. test,test_unseen
