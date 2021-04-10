@@ -39,12 +39,11 @@ done
 
 # Run Models
 cd $ROOT_DIR/bash/pipeline
-pwd
 for EXP in "${EXPERIMENTS[@]}"; do
   read MODEL NUM_FEATS FLAGS <<< "$(sed -r 's/^([A-Z])([0-9]+)([a-z]*)/\1 \2 \3 /' <<< $EXP)"
   if [[ $MODEL == "U" ]]; then
-    qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP  -v $EXP -v $ROOT_DIR -v $CONDA_ROOT_DIR U.sh
+    qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP -v $EXP -v $ROOT_DIR -v $CONDA_ROOT_DIR U.sh
   elif [[ $MODEL == "O" ]]; then
-    qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP O.sh #$EXP $ROOT_DIR $CONDA_ROOT_DIR"
+    qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP -v $EXP -v $ROOT_DIR -v $CONDA_ROOT_DIR O.sh
   fi
 done
