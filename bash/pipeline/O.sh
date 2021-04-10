@@ -32,8 +32,8 @@ python pretrain_bertO.py \
            --batchSize 8 \
            --lr 0.25e-5 \
            --epochs 8 \
-           --topk $topk
-
+           --topk $topk \
+           --exp $EXP
 
 # Train Model
 python hm.py \

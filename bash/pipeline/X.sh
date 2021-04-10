@@ -33,7 +33,8 @@ python pretrain_bertX.py \
            --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
            --loadpre $MODEL_DIR/Epoch18_LXRT.pth \
            --anno_dir $ANNO_DIR \
-           --topk $TOPK
+           --topk $TOPK \
+           --exp $EXP
 
 # Train Model
 python hm.py \
