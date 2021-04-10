@@ -2,10 +2,8 @@
 #$ -S /bin/bash
 
 # Parameters
-#EXP=$1
+# EXP, ROOT_DIR and CONDA_ROOT_DIR passed as environment variables
 read MODEL NUM_FEATS FLAGS <<< "$(sed -r 's/^([A-Z])([0-9]+)([a-z]*)/\1 \2 \3 /' <<< $EXP)"
-#ROOT_DIR=$2
-#CONDA_ROOT_DIR=$3
 DATA_DIR="$ROOT_DIR/data"
 FEATURE_DIR="$DATA_DIR/features"
 MODEL_DIR="$DATA_DIR/models"
