@@ -4,6 +4,10 @@
 # Paths
 ROOT_DIR="/home/miproj/4thyr.oct2020/ojrb2/vilio"
 CONDA_ROOT_DIR="/home/miproj/4thyr.oct2020/ojrb2/miniconda3"
+DATA_DIR="$ROOT_DIR/data"
+FEATURE_DIR="$DATA_DIR/features"
+MODEL_DIR="$DATA_DIR/models"
+ANNO_DIR="$FEATURE_DIR/annotations"
 
 
 # Parameters
