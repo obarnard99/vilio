@@ -30,7 +30,7 @@ python hm.py \
            --tsv \
            --num_features $NUM_FEATS \
            --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
-           --loadpre $MODEL_DIR/devlbert.pth \
+           --loadpre $MODEL_DIR/devlbert.bin \
            --anno_dir $ANNO_DIR \
            --contrib \
            --exp $EXP \
@@ -50,7 +50,7 @@ python hm.py \
            --tsv \
            --num_features $NUM_FEATS \
            --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
-           --loadpre $MODEL_DIR/devlbert.pth \
+           --loadpre $MODEL_DIR/devlbert.bin \
            --anno_dir $ANNO_DIR \
            --contrib \
            --exp $EXP \
