@@ -45,5 +45,9 @@ for EXP in "${EXPERIMENTS[@]}"; do
     qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP -v $EXP -v $ROOT_DIR -v $CONDA_ROOT_DIR U.sh
   elif [[ $MODEL == "O" ]]; then
     qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP -v $EXP -v $ROOT_DIR -v $CONDA_ROOT_DIR O.sh
+  elif [[ $MODEL == "D" ]]; then
+    qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP -v $EXP -v $ROOT_DIR -v $CONDA_ROOT_DIR D.sh
+  elif [[ $MODEL == "X" ]]; then
+    qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP -v $EXP -v $ROOT_DIR -v $CONDA_ROOT_DIR X.sh
   fi
 done
