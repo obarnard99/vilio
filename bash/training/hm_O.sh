@@ -8,7 +8,7 @@ ANNO_DIR="$FEATURE_DIR/annotations"
 topk=-1  # Allows for quick test runs - Set topk to e.g. 20 & midsave to 5
 
 # 50 Feats, Seed 126
-python pretrain/pretrain_bertO.py \
+python pretrain_bertO.py \
            --seed 126 \
            --taskMaskLM \
            --taskMatched \
@@ -28,7 +28,7 @@ python pretrain/pretrain_bertO.py \
 python hm.py \
            --seed 126 \
            --model O \
-           --train train \
+           --train trainlarge \
            --valid dev_seen \
            --test dev_seen \
            --lr 1e-5 \
@@ -47,7 +47,7 @@ python hm.py \
 python hm.py \
            --seed 126 \
            --model O \
-           --train traindev \
+           --train trainlarge \
            --valid dev_seen \
            --test test_seen,test_unseen \
            --lr 1e-5 \
@@ -65,7 +65,7 @@ python hm.py \
 
 
 # 50 VG feats, Seed 84
-python pretrain/pretrain_bertO.py \
+python pretrain_bertO.py \
            --seed 84 \
            --taskMaskLM \
            --taskMatched \
@@ -85,7 +85,7 @@ python pretrain/pretrain_bertO.py \
 python hm.py \
            --seed 84 \
            --model O \
-           --train train \
+           --train trainlarge \
            --valid dev_seen \
            --test dev_seen \
            --lr 1e-5 \
@@ -104,7 +104,7 @@ python hm.py \
 python hm.py \
            --seed 84 \
            --model O \
-           --train traindev \
+           --train trainlarge \
            --valid dev_seen \
            --test test_seen,test_unseen \
            --lr 1e-5 \
@@ -121,7 +121,7 @@ python hm.py \
            --topk $topk
 
 # 36 Feats, Seed 42
-python pretrain/pretrain_bertO.py \
+python pretrain_bertO.py \
            --seed 42 \
            --taskMaskLM \
            --taskMatched \
@@ -141,7 +141,7 @@ python pretrain/pretrain_bertO.py \
 python hm.py \
            --seed 42 \
            --model O \
-           --train train \
+           --train trainlarge \
            --valid dev_seen \
            --test dev_seen \
            --lr 1e-5 \
@@ -160,7 +160,7 @@ python hm.py \
 python hm.py \
            --seed 42 \
            --model O \
-           --train traindev \
+           --train trainlarge \
            --valid dev_seen \
            --test test_seen,test_unseen \
            --lr 1e-5 \

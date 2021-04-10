@@ -9,9 +9,9 @@ ANNO_DIR="$FEATURE_DIR/annotations"
 
 # 50 Feats, Seed 43
 python hm.py \
-           --seed 43 \
+           --seed 47 \
            --model U \
-           --train train \
+           --train trainlarge \
            --valid dev_seen \
            --test dev_seen \
            --lr 1e-5 \
@@ -20,18 +20,18 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr5050_clean.tsv \
+           --features $FEATURE_DIR/tsv_clean/hm_vg5050_clean.tsv \
            --loadpre $MODEL_DIR/uniter-large.pt \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U50ac \
+           --exp U50c \
            --topk $topk \
 
 python hm.py \
-           --seed 43 \
+           --seed 47 \
            --model U \
-           --train traindev \
+           --train trainlarge \
            --valid dev_seen \
            --test test_seen,test_unseen \
            --lr 1e-5 \
@@ -40,19 +40,19 @@ python hm.py \
            --epochs 5 \
            --tsv \
            --num_features 50 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr5050_clean.tsv \
+           --features $FEATURE_DIR/tsv_clean/hm_vg5050_clean.tsv \
            --loadpre $MODEL_DIR/uniter-large.pt \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U50ac \
+           --exp U50c \
            --topk $topk \
 
 # 72 Feats, Seed 86
 python hm.py \
-           --seed 86 \
+           --seed 93 \
            --model U \
-           --train train \
+           --train trainlarge \
            --valid dev_seen \
            --test dev_seen \
            --lr 1e-5 \
@@ -60,19 +60,19 @@ python hm.py \
            --tr bert-large-cased \
            --epochs 5 \
            --tsv \
-           --num_features 72 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr7272_clean.tsv \
+           --num_features 36 \
+           --features $FEATURE_DIR/tsv_clean/hm_vg3636_clean.tsv \
            --loadpre $MODEL_DIR/uniter-large.pt \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U72ac \
+           --exp U36c \
            --topk $topk \
 
 python hm.py \
-           --seed 86 \
+           --seed 93 \
            --model U \
-           --train traindev \
+           --train trainlarge \
            --valid dev_seen \
            --test test_seen,test_unseen \
            --lr 1e-5 \
@@ -80,21 +80,21 @@ python hm.py \
            --tr bert-large-cased \
            --epochs 5 \
            --tsv \
-           --num_features 72 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr7272_clean.tsv \
+           --num_features 36 \
+           --features $FEATURE_DIR/tsv_clean/hm_vg3636_clean.tsv \
            --loadpre $MODEL_DIR/uniter-large.pt \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U72ac \
+           --exp U36c \
            --topk $topk \
 
 
 # 36 Feats, Seed 129
 python hm.py \
-           --seed 129 \
+           --seed 111 \
            --model U \
-           --train train \
+           --train trainlarge \
            --valid dev_seen \
            --test dev_seen \
            --lr 1e-5 \
@@ -102,19 +102,19 @@ python hm.py \
            --tr bert-large-cased \
            --epochs 5 \
            --tsv \
-           --num_features 36 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr3636_clean.tsv \
+           --num_features 20 \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr2020_clean.tsv \
            --loadpre $MODEL_DIR/uniter-large.pt \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U36ac \
+           --exp U20ac \
            --topk $topk \
 
 python hm.py \
-           --seed 129 \
+           --seed 111 \
            --model U \
-           --train traindev \
+           --train trainlarge \
            --valid dev_seen \
            --test test_seen,test_unseen \
            --lr 1e-5 \
@@ -122,137 +122,12 @@ python hm.py \
            --tr bert-large-cased \
            --epochs 5 \
            --tsv \
-           --num_features 36 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr3636_clean.tsv \
+           --num_features 20 \
+           --features $FEATURE_DIR/tsv_clean/hm_vgattr2020_clean.tsv \
            --loadpre $MODEL_DIR/uniter-large.pt \
            --anno_dir $ANNO_DIR \
            --num_pos 6 \
            --contrib \
-           --exp U36ac \
+           --exp U20ac \
            --topk $topk \
 
-
-# 5 Feats, Seed 11
-python hm.py \
-           --seed 11 \
-           --model U \
-           --train train \
-           --valid dev_seen \
-           --test dev_seen \
-           --lr 1e-5 \
-           --batchSize 8 \
-           --tr bert-large-cased \
-           --epochs 5 \
-           --tsv \
-           --num_features 5 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr55_clean.tsv \
-           --loadpre $MODEL_DIR/uniter-large.pt \
-           --anno_dir $ANNO_DIR \
-           --num_pos 6 \
-           --contrib \
-           --exp U5ac \
-           --topk $topk \
-
-python hm.py \
-           --seed 11 \
-           --model U \
-           --train traindev \
-           --valid dev_seen \
-           --test test_seen,test_unseen \
-           --lr 1e-5 \
-           --batchSize 8 \
-           --tr bert-large-cased \
-           --epochs 5 \
-           --tsv \
-           --num_features 5 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr55_clean.tsv \
-           --loadpre $MODEL_DIR/uniter-large.pt \
-           --anno_dir $ANNO_DIR \
-           --num_pos 6 \
-           --contrib \
-           --exp U5ac \
-           --topk $topk \
-
-
-# 10 Feats, Seed 97
-python hm.py \
-           --seed 97 \
-           --model U \
-           --train train \
-           --valid dev_seen \
-           --test dev_seen \
-           --lr 1e-5 \
-           --batchSize 8 \
-           --tr bert-large-cased \
-           --epochs 5 \
-           --tsv \
-           --num_features 10 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr1010_clean.tsv \
-           --loadpre $MODEL_DIR/uniter-large.pt \
-           --anno_dir $ANNO_DIR \
-           --num_pos 6 \
-           --contrib \
-           --exp U10ac \
-           --topk $topk \
-
-python hm.py \
-           --seed 97 \
-           --model U \
-           --train traindev \
-           --valid dev_seen \
-           --test test_seen,test_unseen \
-           --lr 1e-5 \
-           --batchSize 8 \
-           --tr bert-large-cased \
-           --epochs 5 \
-           --tsv \
-           --num_features 10 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr1010_clean.tsv \
-           --loadpre $MODEL_DIR/uniter-large.pt \
-           --anno_dir $ANNO_DIR \
-           --num_pos 6 \
-           --contrib \
-           --exp U10ac \
-           --topk $topk \
-
-
-# 15 Feats, Seed 142
-python hm.py \
-           --seed 142 \
-           --model U \
-           --train train \
-           --valid dev_seen \
-           --test dev_seen \
-           --lr 1e-5 \
-           --batchSize 8 \
-           --tr bert-large-cased \
-           --epochs 5 \
-           --tsv \
-           --num_features 15 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr1515_clean.tsv \
-           --loadpre $MODEL_DIR/uniter-large.pt \
-           --anno_dir $ANNO_DIR \
-           --num_pos 6 \
-           --contrib \
-           --exp U15ac \
-           --topk $topk \
-
-python hm.py \
-           --seed 142 \
-           --model U \
-           --train traindev \
-           --valid dev_seen \
-           --test test_seen,test_unseen \
-           --lr 1e-5 \
-           --batchSize 8 \
-           --tr bert-large-cased \
-           --epochs 5 \
-           --tsv \
-           --num_features 15 \
-           --features $FEATURE_DIR/tsv_clean/hm_vgattr1515_clean.tsv \
-           --loadpre $MODEL_DIR/uniter-large.pt \
-           --anno_dir $ANNO_DIR \
-           --num_pos 6 \
-           --contrib \
-           --exp U15ac \
-           --topk $topk \

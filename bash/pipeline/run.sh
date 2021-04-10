@@ -1,4 +1,5 @@
 #!/bin/bash
+#$ -S /bin/bash
 
 # Paths
 ROOT_DIR="/home/miproj/4thyr.oct2020/ojrb2/vilio"
@@ -15,9 +16,9 @@ EXPERIMENTS=('U36a')
 source $CONDA_ROOT_DIR/bin/activate detectron2
 cd $ROOT_DIR/features/vilio/py-bottom-up-attention
 for EXP in "${EXPERIMENTS[@]}"; do
-  if [[ ! -e "$ROOT_DIR/data/features/tsv/$EXP.tsv" ]]; then
+  read MODEL NUM_FEATS FLAGS <<< "$(sed -r 's/^([A-Z])([0-9]+)([a-z]*)/\1 \2 \3 /' <<< $EXP)"
+  if [[ ! -e "$ROOT_DIR/data/features/tsv/$NUM_FEATS$FLAGS.tsv" ]]; then
     echo "Extracting feats for $EXP"
-    read MODEL NUM_FEATS FLAGS <<< "$(sed -r 's/^([A-Z])([0-9]+)([a-z]*)/\1 \2 \3 /' <<< $EXP)"
     if [[ $FLAGS == *"a"* ]]; then
       WEIGHT="vgattr"
     else
@@ -29,20 +30,21 @@ for EXP in "${EXPERIMENTS[@]}"; do
       SPLIT="img"
     fi
     python detectron2_mscoco_proposal_maxnms.py --batchsize 4 --split $SPLIT --weight $WEIGHT \
-    --minboxes $NUM_FEATS --maxboxes $NUM_FEATS --dataroot $DATA_DIR
+    --minboxes $NUM_FEATS --maxboxes $NUM_FEATS --dataroot $ROOT_DIR/data
   else
-    echo "$EXP.tsv already exists"
+    echo "$NUM_FEATS$FLAGS.tsv already exists"
   fi
 done
 
 
 # Run Models
 cd $ROOT_DIR/bash/pipeline
+pwd
 for EXP in "${EXPERIMENTS[@]}"; do
   read MODEL NUM_FEATS FLAGS <<< "$(sed -r 's/^([A-Z])([0-9]+)([a-z]*)/\1 \2 \3 /' <<< $EXP)"
   if [[ $MODEL == "U" ]]; then
-    qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP U.sh $EXP $ROOT_DIR $CONDA_ROOT_DIR
+    qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP  -v $EXP -v $ROOT_DIR -v $CONDA_ROOT_DIR U.sh
   elif [[ $MODEL == "O" ]]; then
-    qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP O.sh $EXP $ROOT_DIR $CONDA_ROOT_DIR
+    qsub -l qp=cuda-low -o outputs/$EXP -e outputs/$EXP O.sh #$EXP $ROOT_DIR $CONDA_ROOT_DIR"
   fi
 done
