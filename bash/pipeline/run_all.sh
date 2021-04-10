@@ -43,11 +43,11 @@ source $CONDA_ROOT_DIR/bin/activate vilio
 cd $ROOT_DIR
 for EXP in "${EXPERIMENTS[@]}"; do
   read MODEL NUM_FEATS FLAGS <<< "$(sed -r 's/^([A-Z])([0-9]+)([a-z]*)/\1 \2 \3 /' <<< $EXP)"
-  if [[ $MODEL == "U" ]] || [[ $MODEL == "D" ]]; then
+  if [[ $MODEL == "U" ]]; then
     # Train Model
     python hm.py \
                --seed $SEED \
-               --model $MODEL \
+               --model U \
                --train train \
                --valid dev_seen \
                --test dev_seen \
@@ -83,6 +83,47 @@ for EXP in "${EXPERIMENTS[@]}"; do
                --loadpre $MODEL_DIR/uniter-large.pt \
                --anno_dir $ANNO_DIR \
                --num_pos 6 \
+               --contrib \
+               --exp $EXP \
+               --topk $TOPK
+
+  elif [[ $MODEL == "D" ]]; then
+    # Train Model
+    python hm.py \
+               --seed $SEED \
+               --model D \
+               --train train \
+               --valid dev_seen \
+               --test dev_seen \
+               --lr 1e-5 \
+               --batchSize 8 \
+               --tr bert-base-uncased \
+               --epochs 5 \
+               --tsv \
+               --num_features $NUM_FEATS \
+               --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
+               --loadpre $MODEL_DIR/devlbert.pth \
+               --anno_dir $ANNO_DIR \
+               --contrib \
+               --exp $EXP \
+               --topk $TOPK \
+
+    # Inference
+    python hm.py \
+               --seed $SEED \
+               --model D \
+               --train traindev \
+               --valid dev_seen \
+               --test test_seen,test_unseen \
+               --lr 1e-5 \
+               --batchSize 8 \
+               --tr bert-base-uncased \
+               --epochs 5 \
+               --tsv \
+               --num_features $NUM_FEATS \
+               --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
+               --loadpre $MODEL_DIR/devlbert.pth \
+               --anno_dir $ANNO_DIR \
                --contrib \
                --exp $EXP \
                --topk $TOPK
