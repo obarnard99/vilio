@@ -11,7 +11,7 @@ ANNO_DIR="$FEATURE_DIR/annotations"
 
 
 # Parameters
-EXPERIMENTS=('U36a')
+EXPERIMENTS=('X36a')
 #seeds=(129)
 TOPK=20  # Allows for quick test runs - Set topk to e.g. 20 & midsave to 5
 SEED=43
@@ -69,7 +69,6 @@ for EXP in "${EXPERIMENTS[@]}"; do
                --exp $EXP \
                --topk $TOPK \
 
-
     # Inference
     python hm.py \
                --seed $SEED \
@@ -106,7 +105,7 @@ for EXP in "${EXPERIMENTS[@]}"; do
                --tsv \
                --num_features $NUM_FEATS \
                --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
-               --loadpre $MODEL_DIR/devlbert.pth \
+               --loadpre $MODEL_DIR/devlbert.bin \
                --anno_dir $ANNO_DIR \
                --contrib \
                --exp $EXP \
@@ -126,7 +125,7 @@ for EXP in "${EXPERIMENTS[@]}"; do
                --tsv \
                --num_features $NUM_FEATS \
                --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
-               --loadpre $MODEL_DIR/devlbert.pth \
+               --loadpre $MODEL_DIR/devlbert.bin \
                --anno_dir $ANNO_DIR \
                --contrib \
                --exp $EXP \
@@ -149,7 +148,8 @@ for EXP in "${EXPERIMENTS[@]}"; do
                --batchSize 8 \
                --lr 0.25e-5 \
                --epochs 8 \
-               --topk $TOPK
+               --topk $TOPK \
+               --exp $EXP
 
     # Train Model
     python hm.py \
@@ -209,7 +209,8 @@ for EXP in "${EXPERIMENTS[@]}"; do
                --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
                --loadpre $MODEL_DIR/Epoch18_LXRT.pth \
                --anno_dir $ANNO_DIR \
-               --topk $TOPK
+               --topk $TOPK \
+               --exp $EXP
 
     # Train Model
     python hm.py \
@@ -227,6 +228,7 @@ for EXP in "${EXPERIMENTS[@]}"; do
                --rlayers 2 \
                --xlayers 5 \
                --num_features $NUM_FEATS \
+               --features $FEATURE_DIR/tsv/"$NUM_FEATS""$FLAGS".tsv \
                --loadpre $DATA_DIR/LAST_$EXP.pth \
                --anno_dir $ANNO_DIR \
                --swa \

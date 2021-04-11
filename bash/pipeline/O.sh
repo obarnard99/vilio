@@ -2,14 +2,13 @@
 #$ -S /bin/bash
 
 # Parameters
-# EXP, ROOT_DIR and CONDA_ROOT_DIR passed as environment variables
+# EXP, ROOT_DIR, CONDA_ROOT_DIR, TOPK passed as environment variables
 read MODEL NUM_FEATS FLAGS <<< "$(sed -r 's/^([A-Z])([0-9]+)([a-z]*)/\1 \2 \3 /' <<< $EXP)"
 DATA_DIR="$ROOT_DIR/data"
 FEATURE_DIR="$DATA_DIR/features"
 MODEL_DIR="$DATA_DIR/models"
 ANNO_DIR="$FEATURE_DIR/annotations"
 SEED=43
-topk=-1
 
 
 source $CONDA_ROOT_DIR/bin/activate vilio
@@ -32,7 +31,7 @@ python pretrain_bertO.py \
            --batchSize 8 \
            --lr 0.25e-5 \
            --epochs 8 \
-           --topk $topk \
+           --topk $TOPK \
            --exp $EXP
 
 # Train Model
@@ -53,7 +52,7 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --contrib \
            --exp $EXP \
-           --topk $topk
+           --topk $TOPK
 
 
 # Inference
@@ -74,4 +73,5 @@ python hm.py \
            --anno_dir $ANNO_DIR \
            --contrib \
            --exp $EXP \
-           --topk $topk
+           --topk $TOPK
+
