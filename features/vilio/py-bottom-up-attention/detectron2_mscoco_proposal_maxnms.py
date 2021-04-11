@@ -38,6 +38,7 @@ parser.add_argument('--weight', default='vg', type=str,
 parser.add_argument('--minboxes', default=50, type=int, help='minboxes')
 parser.add_argument('--maxboxes', default=50, type=int, help='maxboxes')
 parser.add_argument('--dataroot', default='./data/', type=str, help="Path to data root")
+parser.add_argument('--name', default='features', type=str, help="Output file name")
 
 
 args = parser.parse_args()
@@ -318,7 +319,7 @@ if __name__ == "__main__":
     pathXid = load_image_ids(DATA_ROOT, args.split)     # Get paths and ids
     detector = build_model()
     
-    output_path = os.path.join(args.dataroot, 'tsv_clean/hm_{}{}{}_clean.tsv'.format(args.weight, args.minboxes, args.maxboxes))
+    output_path = os.path.join(args.dataroot, 'tsv/{}.tsv'.format(args.name))
     extract_feat(output_path, detector, pathXid)
 
 ## NOTES:

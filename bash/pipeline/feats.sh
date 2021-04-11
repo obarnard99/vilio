@@ -26,7 +26,7 @@ for EXP in "${EXPERIMENTS[@]}"; do
       SPLIT="img"
     fi
     python detectron2_mscoco_proposal_maxnms.py --batchsize 4 --split $SPLIT --weight $WEIGHT \
-    --minboxes $NUM_FEATS --maxboxes $NUM_FEATS --dataroot $ROOT_DIR/data
+    --minboxes $NUM_FEATS --maxboxes $NUM_FEATS --dataroot $ROOT_DIR/data/features --name $NUM_FEATS$FLAGS
   else
     echo "$NUM_FEATS$FLAGS.tsv already exists"
   fi
