@@ -17,9 +17,9 @@ from src.vilio.transformers.optimization import AdamW, get_linear_schedule_with_
 from utils.pandas_scripts import clean_data
 
 from models.U import ModelU
-from models.entryX import ModelX
-from models.entryV import ModelV
-from models.entryD import ModelD
+from models.X import ModelX
+from models.V import ModelV
+from models.D import ModelD
 from models.O import ModelO
 
 # Two different SWA Methods - https://pytorch.org/blog/pytorch-1.6-now-includes-stochastic-weight-averaging/
