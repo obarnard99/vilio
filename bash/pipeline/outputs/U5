@@ -1,0 +1,396 @@
+Some weights of BertU were not initialized from the model checkpoint at bert-large-cased and are newly initialized: ['bert.img_embeddings.img_linear.weight', 'bert.img_embeddings.img_linear.bias', 'bert.img_embeddings.img_layer_norm.weight', 'bert.img_embeddings.img_layer_norm.bias', 'bert.img_embeddings.pos_layer_norm.weight', 'bert.img_embeddings.pos_layer_norm.bias', 'bert.img_embeddings.pos_linear.weight', 'bert.img_embeddings.pos_linear.bias', 'bert.img_embeddings.LayerNorm.weight', 'bert.img_embeddings.LayerNorm.bias']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+Clean datasets already exist
+Load 8452 data from split(s) train.
+Start to load Faster-RCNN detected objects from /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv
+Loaded 8452 images in file /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv in 8 seconds.
+Use 8452 data in torch dataset
+
+Load 640 data from split(s) dev_all.
+Start to load Faster-RCNN detected objects from /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv
+Loaded 640 images in file /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv in 6 seconds.
+Use 640 data in torch dataset
+
+UNEXPECTED:  []
+MISSING:  ['bert.img_embeddings.img_linear.weight', 'bert.img_embeddings.img_linear.bias', 'bert.img_embeddings.img_layer_norm.weight', 'bert.img_embeddings.img_layer_norm.bias', 'bert.img_embeddings.pos_layer_norm.weight', 'bert.img_embeddings.pos_layer_norm.bias', 'bert.img_embeddings.pos_linear.weight', 'bert.img_embeddings.pos_linear.bias', 'bert.img_embeddings.LayerNorm.weight', 'bert.img_embeddings.LayerNorm.bias']
+ERRORS:  []
+REINITING:  Linear(in_features=1024, out_features=2048, bias=True)
+REINITING:  GeLU()
+REINITING:  LayerNorm((2048,), eps=1e-12, elementwise_affine=True)
+REINITING:  Linear(in_features=2048, out_features=2, bias=True)
+REINITING:  Sequential(
+  (0): Linear(in_features=1024, out_features=2048, bias=True)
+  (1): GeLU()
+  (2): LayerNorm((2048,), eps=1e-12, elementwise_affine=True)
+  (3): Linear(in_features=2048, out_features=2, bias=True)
+)
+Load pre-trained model from /home/miproj/4thyr.oct2020/ojrb2/vilio/data/models/uniter-large.pt
+
+Weights in loaded but not in model:
+cls.predictions.bias
+cls.predictions.decoder.weight
+cls.predictions.transform.LayerNorm.bias
+cls.predictions.transform.LayerNorm.weight
+cls.predictions.transform.dense.bias
+cls.predictions.transform.dense.weight
+feat_regress.bias
+feat_regress.net.0.bias
+feat_regress.net.0.weight
+feat_regress.net.2.bias
+feat_regress.net.2.weight
+feat_regress.weight
+img_embeddings.mask_embedding.weight
+itm_output.bias
+itm_output.weight
+region_classifier.net.0.bias
+region_classifier.net.0.weight
+region_classifier.net.2.bias
+region_classifier.net.2.weight
+region_classifier.net.3.bias
+region_classifier.net.3.weight
+
+Weights in model but not in loaded:
+embeddings.position_ids
+
+Total Iters: 5285
+Splits in Train data: ['train']
+Splits in Valid data: ['dev_all']
+Batches: 1057
+/home/miproj/4thyr.oct2020/ojrb2/miniconda3/envs/vilio/lib/python3.8/site-packages/torchcontrib/optim/swa.py:130: UserWarning: Casting swa_start, swa_freq to int
+  warnings.warn("Casting swa_start, swa_freq to int")
+tensor([-0.8297, -0.5730], device='cuda:2')
+
+Epoch(U) 0(250): Train AC 59.15 RA 55.1087 LOSS 1394.1887
+
+Epoch(U) 0(250): DEV AC 60.47 RA 54.4035 
+Epoch(U) 0(250): BEST AC 60.47 RA 54.4035 
+
+Epoch(U) 0(500): Train AC 61.18 RA 58.6344 LOSS 1304.5422
+
+Epoch(U) 0(500): DEV AC 63.91 RA 66.3566 
+Epoch(U) 0(500): BEST AC 63.91 RA 66.3566 
+
+Epoch(U) 0(750): Train AC 64.17 RA 63.5812 LOSS 1174.5593
+
+Epoch(U) 0(750): DEV AC 65.47 RA 73.0486 
+Epoch(U) 0(750): BEST AC 65.47 RA 73.0486 
+
+Epoch(U) 0(1000): Train AC 66.57 RA 68.0163 LOSS 1071.1665
+
+Epoch(U) 0(1000): DEV AC 68.28 RA 71.6321 
+Epoch(U) 0(1000): BEST AC 65.47 RA 73.0486 
+tensor([-0.3645, -1.1859], device='cuda:2')
+
+Epoch(U) 1(1250): Train AC 81.74 RA 88.6120 LOSS 895.8808
+
+Epoch(U) 1(1250): DEV AC 69.38 RA 73.9108 
+Epoch(U) 1(1250): BEST AC 69.38 RA 73.9108 
+
+Epoch(U) 1(1500): Train AC 80.76 RA 87.4095 LOSS 918.6657
+
+Epoch(U) 1(1500): DEV AC 69.22 RA 75.4128 
+Epoch(U) 1(1500): BEST AC 69.22 RA 75.4128 
+
+Epoch(U) 1(1750): Train AC 81.40 RA 87.9288 LOSS 847.9802
+
+Epoch(U) 1(1750): DEV AC 71.72 RA 75.6941 
+Epoch(U) 1(1750): BEST AC 71.72 RA 75.6941 
+
+Epoch(U) 1(2000): Train AC 81.73 RA 88.1945 LOSS 831.1776
+
+Epoch(U) 1(2000): DEV AC 71.72 RA 75.5117 
+Epoch(U) 1(2000): BEST AC 71.72 RA 75.6941 
+tensor([-0.0122, -4.4105], device='cuda:2')
+
+Epoch(U) 2(2250): Train AC 92.19 RA 95.9476 LOSS 682.4167
+
+Epoch(U) 2(2250): DEV AC 70.62 RA 75.7270 
+Epoch(U) 2(2250): BEST AC 70.62 RA 75.7270 
+
+Epoch(U) 2(2500): Train AC 92.39 RA 96.7884 LOSS 532.9307
+
+Epoch(U) 2(2500): DEV AC 70.31 RA 74.8164 
+Epoch(U) 2(2500): BEST AC 70.62 RA 75.7270 
+
+Epoch(U) 2(2750): Train AC 92.51 RA 96.8597 LOSS 601.2816
+
+Epoch(U) 2(2750): DEV AC 70.94 RA 75.3304 
+Epoch(U) 2(2750): BEST AC 70.62 RA 75.7270 
+
+Epoch(U) 2(3000): Train AC 92.18 RA 96.7505 LOSS 620.1674
+
+Epoch(U) 2(3000): DEV AC 71.25 RA 74.9627 
+Epoch(U) 2(3000): BEST AC 70.62 RA 75.7270 
+tensor([-0.0143, -4.2567], device='cuda:2')
+
+Epoch(U) 3(3250): Train AC 96.99 RA 99.2240 LOSS 559.6242
+
+Epoch(U) 3(3250): DEV AC 70.62 RA 73.6852 
+Epoch(U) 3(3250): BEST AC 70.62 RA 75.7270 
+
+Epoch(U) 3(3500): Train AC 96.73 RA 99.0080 LOSS 328.8873
+
+Epoch(U) 3(3500): DEV AC 71.09 RA 72.7303 
+Epoch(U) 3(3500): BEST AC 70.62 RA 75.7270 
+
+Epoch(U) 3(3750): Train AC 96.80 RA 98.9465 LOSS 303.6248
+
+Epoch(U) 3(3750): DEV AC 71.41 RA 73.2757 
+Epoch(U) 3(3750): BEST AC 70.62 RA 75.7270 
+
+Epoch(U) 3(4000): Train AC 96.62 RA 99.0031 LOSS 348.4045
+
+Epoch(U) 3(4000): DEV AC 70.62 RA 72.8611 
+Epoch(U) 3(4000): BEST AC 70.62 RA 75.7270 
+tensor([-7.2316e+00, -7.2358e-04], device='cuda:2')
+
+Epoch(U) 4(4250): Train AC 96.02 RA 96.0632 LOSS 482.7060
+
+Epoch(U) 4(4250): DEV AC 69.06 RA 72.6988 
+Epoch(U) 4(4250): BEST AC 70.62 RA 75.7270 
+
+Epoch(U) 4(4500): Train AC 95.91 RA 98.6757 LOSS 394.5625
+
+Epoch(U) 4(4500): DEV AC 71.25 RA 74.8483 
+Epoch(U) 4(4500): BEST AC 70.62 RA 75.7270 
+
+Epoch(U) 4(4750): Train AC 95.57 RA 98.5763 LOSS 448.8919
+
+Epoch(U) 4(4750): DEV AC 71.41 RA 75.6421 
+Epoch(U) 4(4750): BEST AC 70.62 RA 75.7270 
+
+Epoch(U) 4(5000): Train AC 95.64 RA 98.6311 LOSS 389.7727
+
+Epoch(U) 4(5000): DEV AC 70.47 RA 75.4216 
+Epoch(U) 4(5000): BEST AC 70.62 RA 75.7270 
+
+Epoch(U) 4(5250): Train AC 95.65 RA 98.5473 LOSS 454.0087
+
+Epoch(U) 4(5250): DEV AC 72.03 RA 75.6967 
+Epoch(U) 4(5250): BEST AC 70.62 RA 75.7270 
+Load model from ./data/LASTtrainU5.pth
+Load 640 data from split(s) dev_all.
+Start to load Faster-RCNN detected objects from /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv
+Loaded 640 images in file /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv in 6 seconds.
+Use 640 data in torch dataset
+
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 640 entries, 0 to 639
+Data columns (total 3 columns):
+ #   Column  Non-Null Count  Dtype  
+---  ------  --------------  -----  
+ 0   id      640 non-null    int64  
+ 1   proba   640 non-null    float64
+ 2   label   640 non-null    int64  
+dtypes: float64(1), int64(2)
+memory usage: 15.1 KB
+None
+(0.709375, 0.7536957484727674)
+Some weights of BertU were not initialized from the model checkpoint at bert-large-cased and are newly initialized: ['bert.img_embeddings.img_linear.weight', 'bert.img_embeddings.img_linear.bias', 'bert.img_embeddings.img_layer_norm.weight', 'bert.img_embeddings.img_layer_norm.bias', 'bert.img_embeddings.pos_layer_norm.weight', 'bert.img_embeddings.pos_layer_norm.bias', 'bert.img_embeddings.pos_linear.weight', 'bert.img_embeddings.pos_linear.bias', 'bert.img_embeddings.LayerNorm.weight', 'bert.img_embeddings.LayerNorm.bias']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+Clean datasets already exist
+Load 9092 data from split(s) traindev.
+Start to load Faster-RCNN detected objects from /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv
+Loaded 9092 images in file /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv in 8 seconds.
+Use 9092 data in torch dataset
+
+Load 640 data from split(s) dev_all.
+Start to load Faster-RCNN detected objects from /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv
+Loaded 640 images in file /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv in 6 seconds.
+Use 640 data in torch dataset
+
+UNEXPECTED:  []
+MISSING:  ['bert.img_embeddings.img_linear.weight', 'bert.img_embeddings.img_linear.bias', 'bert.img_embeddings.img_layer_norm.weight', 'bert.img_embeddings.img_layer_norm.bias', 'bert.img_embeddings.pos_layer_norm.weight', 'bert.img_embeddings.pos_layer_norm.bias', 'bert.img_embeddings.pos_linear.weight', 'bert.img_embeddings.pos_linear.bias', 'bert.img_embeddings.LayerNorm.weight', 'bert.img_embeddings.LayerNorm.bias']
+ERRORS:  []
+REINITING:  Linear(in_features=1024, out_features=2048, bias=True)
+REINITING:  GeLU()
+REINITING:  LayerNorm((2048,), eps=1e-12, elementwise_affine=True)
+REINITING:  Linear(in_features=2048, out_features=2, bias=True)
+REINITING:  Sequential(
+  (0): Linear(in_features=1024, out_features=2048, bias=True)
+  (1): GeLU()
+  (2): LayerNorm((2048,), eps=1e-12, elementwise_affine=True)
+  (3): Linear(in_features=2048, out_features=2, bias=True)
+)
+Load pre-trained model from /home/miproj/4thyr.oct2020/ojrb2/vilio/data/models/uniter-large.pt
+
+Weights in loaded but not in model:
+cls.predictions.bias
+cls.predictions.decoder.weight
+cls.predictions.transform.LayerNorm.bias
+cls.predictions.transform.LayerNorm.weight
+cls.predictions.transform.dense.bias
+cls.predictions.transform.dense.weight
+feat_regress.bias
+feat_regress.net.0.bias
+feat_regress.net.0.weight
+feat_regress.net.2.bias
+feat_regress.net.2.weight
+feat_regress.weight
+img_embeddings.mask_embedding.weight
+itm_output.bias
+itm_output.weight
+region_classifier.net.0.bias
+region_classifier.net.0.weight
+region_classifier.net.2.bias
+region_classifier.net.2.weight
+region_classifier.net.3.bias
+region_classifier.net.3.weight
+
+Weights in model but not in loaded:
+embeddings.position_ids
+
+Total Iters: 5685
+Splits in Train data: ['traindev']
+Splits in Valid data: ['dev_all']
+Batches: 1137
+/home/miproj/4thyr.oct2020/ojrb2/miniconda3/envs/vilio/lib/python3.8/site-packages/torchcontrib/optim/swa.py:130: UserWarning: Casting swa_start, swa_freq to int
+  warnings.warn("Casting swa_start, swa_freq to int")
+tensor([-0.9700, -0.4766], device='cuda:2')
+
+Epoch(U) 0(250): Train AC 56.30 RA 51.4286 LOSS 1439.6441
+
+Epoch(U) 0(250): DEV AC 61.09 RA 48.9147 
+Epoch(U) 0(250): BEST AC 61.09 RA 48.9147 
+
+Epoch(U) 0(500): Train AC 60.75 RA 57.2451 LOSS 1276.9040
+
+Epoch(U) 0(500): DEV AC 65.78 RA 72.1853 
+Epoch(U) 0(500): BEST AC 65.78 RA 72.1853 
+
+Epoch(U) 0(750): Train AC 63.62 RA 62.6815 LOSS 1197.6197
+
+Epoch(U) 0(750): DEV AC 63.28 RA 74.3847 
+Epoch(U) 0(750): BEST AC 63.28 RA 74.3847 
+
+Epoch(U) 0(1000): Train AC 66.39 RA 66.9875 LOSS 1102.5669
+
+Epoch(U) 0(1000): DEV AC 73.44 RA 78.5353 
+Epoch(U) 0(1000): BEST AC 73.44 RA 78.5353 
+tensor([-0.7103, -0.6762], device='cuda:2')
+
+Epoch(U) 1(1250): Train AC 82.41 RA 86.8368 LOSS 968.9888
+
+Epoch(U) 1(1250): DEV AC 79.06 RA 85.0202 
+Epoch(U) 1(1250): BEST AC 79.06 RA 85.0202 
+
+Epoch(U) 1(1500): Train AC 81.99 RA 87.4783 LOSS 860.7592
+
+Epoch(U) 1(1500): DEV AC 79.53 RA 88.2519 
+Epoch(U) 1(1500): BEST AC 79.53 RA 88.2519 
+
+Epoch(U) 1(1750): Train AC 82.22 RA 87.1832 LOSS 905.9768
+
+Epoch(U) 1(1750): DEV AC 85.00 RA 89.2872 
+Epoch(U) 1(1750): BEST AC 85.00 RA 89.2872 
+
+Epoch(U) 1(2000): Train AC 82.46 RA 87.7801 LOSS 813.4048
+
+Epoch(U) 1(2000): DEV AC 86.41 RA 91.5454 
+Epoch(U) 1(2000): BEST AC 86.41 RA 91.5454 
+
+Epoch(U) 1(2250): Train AC 82.03 RA 87.7197 LOSS 871.3823
+
+Epoch(U) 1(2250): DEV AC 89.53 RA 95.4374 
+Epoch(U) 1(2250): BEST AC 89.53 RA 95.4374 
+tensor([-0.0292, -3.5474], device='cuda:2')
+
+Epoch(U) 2(2500): Train AC 92.31 RA 96.7139 LOSS 554.7431
+
+Epoch(U) 2(2500): DEV AC 88.91 RA 95.7753 
+Epoch(U) 2(2500): BEST AC 88.91 RA 95.7753 
+
+Epoch(U) 2(2750): Train AC 91.91 RA 96.1586 LOSS 655.2523
+
+Epoch(U) 2(2750): DEV AC 91.88 RA 96.9878 
+Epoch(U) 2(2750): BEST AC 91.88 RA 96.9878 
+
+Epoch(U) 2(3000): Train AC 92.10 RA 96.3726 LOSS 593.6051
+
+Epoch(U) 2(3000): DEV AC 93.28 RA 97.9582 
+Epoch(U) 2(3000): BEST AC 93.28 RA 97.9582 
+
+Epoch(U) 2(3250): Train AC 92.00 RA 96.3719 LOSS 632.3666
+
+Epoch(U) 2(3250): DEV AC 94.06 RA 98.1436 
+Epoch(U) 2(3250): BEST AC 94.06 RA 98.1436 
+tensor([-1.4008e-03, -6.5714e+00], device='cuda:2')
+
+Epoch(U) 3(3500): Train AC 97.33 RA 99.3538 LOSS 458.9554
+
+Epoch(U) 3(3500): DEV AC 94.69 RA 98.6299 
+Epoch(U) 3(3500): BEST AC 94.69 RA 98.6299 
+
+Epoch(U) 3(3750): Train AC 96.31 RA 99.0041 LOSS 363.0914
+
+Epoch(U) 3(3750): DEV AC 95.00 RA 98.3466 
+Epoch(U) 3(3750): BEST AC 94.69 RA 98.6299 
+
+Epoch(U) 3(4000): Train AC 96.67 RA 99.0732 LOSS 274.2560
+
+Epoch(U) 3(4000): DEV AC 94.84 RA 99.3613 
+Epoch(U) 3(4000): BEST AC 94.84 RA 99.3613 
+
+Epoch(U) 3(4250): Train AC 96.36 RA 99.0136 LOSS 397.6179
+
+Epoch(U) 3(4250): DEV AC 96.72 RA 99.6157 
+Epoch(U) 3(4250): BEST AC 96.72 RA 99.6157 
+
+Epoch(U) 3(4500): Train AC 95.97 RA 98.7873 LOSS 499.1598
+
+Epoch(U) 3(4500): DEV AC 96.41 RA 99.3108 
+Epoch(U) 3(4500): BEST AC 96.72 RA 99.6157 
+tensor([-3.4086e-03, -5.6832e+00], device='cuda:2')
+
+Epoch(U) 4(4750): Train AC 96.91 RA 98.5337 LOSS 382.4111
+
+Epoch(U) 4(4750): DEV AC 96.72 RA 99.4066 
+Epoch(U) 4(4750): BEST AC 96.72 RA 99.6157 
+
+Epoch(U) 4(5000): Train AC 96.57 RA 98.5718 LOSS 383.1216
+
+Epoch(U) 4(5000): DEV AC 96.41 RA 98.9575 
+Epoch(U) 4(5000): BEST AC 96.72 RA 99.6157 
+
+Epoch(U) 4(5250): Train AC 96.47 RA 98.5522 LOSS 409.7269
+
+Epoch(U) 4(5250): DEV AC 96.88 RA 99.4159 
+Epoch(U) 4(5250): BEST AC 96.72 RA 99.6157 
+
+Epoch(U) 4(5500): Train AC 96.09 RA 98.4350 LOSS 527.5547
+
+Epoch(U) 4(5500): DEV AC 96.72 RA 99.5344 
+Epoch(U) 4(5500): BEST AC 96.72 RA 99.6157 
+Load model from ./data/LASTtraindevU5.pth
+Load 1000 data from split(s) test_seen.
+Start to load Faster-RCNN detected objects from /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv
+Loaded 1000 images in file /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv in 7 seconds.
+Use 1000 data in torch dataset
+
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 1000 entries, 0 to 999
+Data columns (total 3 columns):
+ #   Column  Non-Null Count  Dtype  
+---  ------  --------------  -----  
+ 0   id      1000 non-null   int64  
+ 1   proba   1000 non-null   float64
+ 2   label   1000 non-null   int64  
+dtypes: float64(1), int64(2)
+memory usage: 23.6 KB
+None
+Load 2000 data from split(s) test_unseen.
+Start to load Faster-RCNN detected objects from /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv
+Loaded 2000 images in file /home/miproj/4thyr.oct2020/ojrb2/vilio/data/features/tsv/5.tsv in 7 seconds.
+Use 2000 data in torch dataset
+
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 2000 entries, 0 to 1999
+Data columns (total 3 columns):
+ #   Column  Non-Null Count  Dtype  
+---  ------  --------------  -----  
+ 0   id      2000 non-null   int64  
+ 1   proba   2000 non-null   float64
+ 2   label   2000 non-null   int64  
+dtypes: float64(1), int64(2)
+memory usage: 47.0 KB
+None
