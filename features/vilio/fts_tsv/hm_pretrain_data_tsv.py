@@ -91,7 +91,7 @@ class LXMERTTorchDataset(Dataset):
         datum = self.data[random.randint(0, len(self.data)-1)]
         img_id = datum['id']
         img_info = self.imgid2img[img_id]
-        feat = img_info['features'][random.randint(0, 35)]
+        feat = img_info['features'][random.randrange(args.num_features)]
         return feat
 
     def __getitem__(self, item: int):

@@ -374,8 +374,8 @@ class LXMERT:
             if args.task_qa:
                 train_tuple.evaluator.evaluate(uid2ans, pprint=True)
                 
-            if epoch == 5:
-                self.save("Epoch%02d" % (epoch+1))
+            #if epoch == 5:
+            #    self.save("Epoch%02d" % (epoch+1))
 
         self.save("LAST_" + args.exp)
 
