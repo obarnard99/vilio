@@ -3,3 +3,4 @@ ernie-vil*
 *__pycache__
 .ipynb_checkpoints
 /features/himario/gcp/f-mt126-1-e8ab23b3ed9a.json
+/bash/pipeline/outputs
