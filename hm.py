@@ -46,6 +46,10 @@ def get_tuple(splits: str, bs: int, shuffle=False, drop_last=False) -> DataTuple
     return DataTuple(dataset=dset, loader=data_loader, evaluator=evaluator)
 
 
+def cleanup():
+    os.remove("LAST" + args.train + args.exp + ".pth")
+
+
 class HM:
     def __init__(self):
 
@@ -382,6 +386,7 @@ def main():
                 print(result)
             else:
                 assert False, "No such test option for %s" % args.test
+    cleanup()
 
 
 if __name__ == "__main__":
