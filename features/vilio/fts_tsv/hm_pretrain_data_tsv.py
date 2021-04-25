@@ -71,7 +71,8 @@ class LXMERTTorchDataset(Dataset):
         self.imgid2img = {}
         for img_datum in img_data:
             # Adding int here to convert 0625 to 625
-            self.imgid2img[int(img_datum['img_id'])] = img_datum
+            if img_datum['num_boxes'] == img_datum['features'] == img_datum['boxes']:
+                self.imgid2img[int(img_datum['img_id'])] = img_datum
 
         # Only keep the data with loaded image features
         self.data = []
