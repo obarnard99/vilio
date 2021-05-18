@@ -12,14 +12,16 @@ ANNO_DIR="$FEATURE_DIR/annotations"
 source $CONDA_ROOT_DIR/bin/activate vilio
 cd $ROOT_DIR
 
+echo ""
+echo "--------------------------------------------------- START ---------------------------------------------------"
 
 # Train Model
 python hm.py \
            --seed $SEED \
            --model D \
            --train train \
-           --valid dev_seen \
-           --test dev_seen \
+           --valid dev_all \
+           --test dev_all \
            --lr 1e-5 \
            --batchSize 8 \
            --tr bert-base-uncased \
@@ -38,7 +40,7 @@ python hm.py \
            --seed $SEED \
            --model D \
            --train traindev \
-           --valid dev_seen \
+           --valid dev_all \
            --test test_seen,test_unseen \
            --lr 1e-5 \
            --batchSize 8 \

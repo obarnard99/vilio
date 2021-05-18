@@ -6,7 +6,7 @@ ROOT_DIR="/home/miproj/4thyr.oct2020/ojrb2/vilio"
 CONDA_ROOT_DIR="/home/miproj/4thyr.oct2020/ojrb2/miniconda3"
 
 # Parameters
-EXPERIMENTS=('U5a' 'U10a' 'U15a' 'U20a' 'U36a' 'U50a' 'U72a' 'U5' 'U10' 'U15' 'U20' 'U36' 'U50' 'U72')
+EXPERIMENTS=('U72c')
 
 # Extract Features
 source $CONDA_ROOT_DIR/bin/activate detectron2
