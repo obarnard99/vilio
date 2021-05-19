@@ -1,5 +1,6 @@
 import collections
 import os
+import time
 
 import torch
 import torch.nn as nn
@@ -354,18 +355,17 @@ def main():
 
     # Train and/or Test:
     if args.train is not None:
+        start = time.time()
         print('Splits in Train data:', hm.train_tuple.dataset.splits)
         if hm.valid_tuple is not None:
             print('Splits in Valid data:', hm.valid_tuple.dataset.splits)
         else:
             print("DO NOT USE VALIDATION")
         hm.train(hm.train_tuple, hm.valid_tuple)
-
-        # If we also test afterwards load the last model
-        if args.test is not None:
-            hm.load(os.path.join(hm.output, "LAST" + args.train + args.exp + ".pth"))
+        print(f'Training completed in {time.time()-start}s')
 
     if args.test is not None:
+        hm.load(os.path.join(hm.output, "LAST" + args.train + args.exp + ".pth"))
         # We can specify multiple test args e.g. test,test_unseen
         for split in args.test.split(","):
             # Anthing that has no labels:
@@ -385,7 +385,9 @@ def main():
                 print(result)
             else:
                 assert False, "No such test option for %s" % args.test
-    hm.cleanup()
+
+    if args.cleanup:
+        hm.cleanup()
 
 
 if __name__ == "__main__":
