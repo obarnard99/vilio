@@ -370,18 +370,22 @@ def main():
         for split in args.test.split(","):
             # Anthing that has no labels:
             if 'test' in split:
+                start = time.time()
                 hm.predict(
                     get_tuple(split, bs=args.batch_size,
                               shuffle=False, drop_last=False),
                     dump=os.path.join(args.output, '{}_{}.csv'.format(args.exp, split))
                 )
+                print(f'Inference (test) completed in {time.time() - start}s')
             # Anything else that has labels:
             elif 'dev' in split or 'valid' in split or 'train' in split:
+                start = time.time()
                 result = hm.evaluate(
                     get_tuple(split, bs=args.batch_size,
                               shuffle=False, drop_last=False),
                     dump=os.path.join(args.output, '{}_{}.csv'.format(args.exp, split))
                 )
+                print(f'Inference (test) completed in {time.time() - start}s')
                 print(result)
             else:
                 assert False, "No such test option for %s" % args.test

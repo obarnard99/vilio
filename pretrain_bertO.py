@@ -1,6 +1,7 @@
 import collections
 import os
 import random
+import time
 
 from tqdm import tqdm
 import numpy as np
@@ -18,7 +19,6 @@ from utils.pandas_scripts import clean_data
 from src.vilio.transformers.tokenization_auto import AutoTokenizer
 from src.vilio.transformers.optimization import AdamW, get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
 from src.vilio.modeling_bertO import BertOPretraining
-
 
 DataTuple = collections.namedtuple("DataTuple", 'dataset torchdset loader evaluator')
 
@@ -433,7 +433,9 @@ if __name__ == "__main__":
 
     lxmert = LXMERT(max_seq_length=128)
 
+    start = time.time()
     lxmert.train(train_tuple, valid_tuple)
+    print(f'Pre-training completed in {time.time()-start}s')
 
 
 

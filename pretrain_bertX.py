@@ -1,6 +1,7 @@
 import collections
 import os
 import random
+import time
 
 from tqdm import tqdm
 import numpy as np
@@ -418,7 +419,9 @@ if __name__ == "__main__":
 
     lxmert = LXMERT(max_seq_length=128)
 
+    start = time.time()
     lxmert.train(train_tuple, valid_tuple)
+    print(f'Pre-training completed in {time.time() - start}s')
 
 
 
