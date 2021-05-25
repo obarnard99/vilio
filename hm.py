@@ -385,7 +385,7 @@ def main():
                               shuffle=False, drop_last=False),
                     dump=os.path.join(args.output, '{}_{}.csv'.format(args.exp, split))
                 )
-                print(f'Inference (test) completed in {time.time() - start}s')
+                print(f'Inference (dev) completed in {time.time() - start}s')
                 print(result)
             else:
                 assert False, "No such test option for %s" % args.test
