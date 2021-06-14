@@ -1,6 +1,6 @@
 models = ['U', 'O', 'D', 'X']
-feats = [1, 5, 10, 15, 20, 36, 50, 72]
-flags = ['', 'a', 'c', 'ac']
+feats = [20]
+flags = ['', 'a']
 
 out = ''
 for model in models:
