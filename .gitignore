@@ -1,10 +1,11 @@
-data/
+data
 ernie-vil*
 *__pycache__
 .ipynb_checkpoints
 /features/himario/gcp/f-mt126-1-e8ab23b3ed9a.json
-/bash/pipeline/outputs/*
-*/py-bottom-up-attention/build/
-*/py-bottom-up-attention/detectron2*
-*/py-bottom-up-attention/data
-*/py-bottom-up-attention/old-configs
+/bash/pipeline/outputs/**
+**/py-bottom-up-attention/build/
+**/py-bottom-up-attention/detectron2/**
+**/py-bottom-up-attention/detectron2.egg-info/**
+**/py-bottom-up-attention/data
+**/py-bottom-up-attention/old-configs
