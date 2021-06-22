@@ -19,7 +19,7 @@ def phash(img_path):
 
 # The HM Dataset is very noisy: In the first version of the dataset there were many duplicates with conflicting labels
 # In the second version, the conflicting labels have all been resolved, yet the duplicates remain
-def clean_data(data_path="./data", force=False):
+def clean_data(data_path="./data", img_path="./data", save_path="./data", force=False):
     """
     Cleans the HM train & dev data.
     Outputs traindev & pretrain data.
@@ -27,7 +27,7 @@ def clean_data(data_path="./data", force=False):
     data_path: Path to folder with train.jsonl, dev_unseen.jsonl, dev_seen.jsonl
     """
     # Check if the statement was already run and the necessary data exists:
-    if os.path.exists(os.path.join(data_path, "pretrain.jsonl")):
+    if os.path.exists(os.path.join(save_path, "pretrain.jsonl")):
         print('Clean datasets already exist')
         if not force:
             return
@@ -37,17 +37,31 @@ def clean_data(data_path="./data", force=False):
 
     # Load all files
     train = pd.read_json(os.path.join(data_path, "train.jsonl"), lines=True, orient="records")
-    dev_seen = pd.read_json(os.path.join(data_path, "dev_seen.jsonl"), lines=True, orient="records")
+    dev_seen = pd.read_json(os.path.join(data_path, "dev.jsonl"), lines=True, orient="records")
+    dev_unseen = pd.read_json(os.path.join(data_path, "dev_unseen.jsonl"), lines=True, orient="records")
+    test = pd.read_json(os.path.join(data_path, "test.jsonl"), lines=True, orient="records")
+    test_seen = pd.read_json(os.path.join(data_path, "test_seen.jsonl"), lines=True, orient="records")
+    test_unseen = pd.read_json(os.path.join(data_path, "test_unseen.jsonl"), lines=True, orient="records")
+
+
+    # Lengths
+    print('')
+    print('Sizes before cleaning:')
+    print(f'train: {len(train)} memes')
+    print(f'dev_seen: {len(dev_seen)} memes')
+    print(f'dev_unseen: {len(dev_unseen)} memes')
+    print(f'test: {len(test)} memes')
+    print(f'test_seen: {len(test_seen)} memes')
+    print(f'test_unseen: {len(test_unseen)} memes')
 
     # We validate with dev_seen throughout all experiments, so we only take the new data from dev_unseen add it to
     # train and then discard dev_unseen
-    dev_unseen = pd.read_json(os.path.join(data_path, "dev_unseen.jsonl"), lines=True, orient="records")
     dev_unseen = dev_unseen[~dev_unseen['id'].isin(dev_seen.id.values)].copy()
 
     # Clean training data
     df_dict = {'train': train, 'dev_seen': dev_seen, 'dev_unseen': dev_unseen}
     train_dist = pd.concat([df.assign(identity=key) for key, df in df_dict.items()])
-    train_dist['full_path'] = train_dist['img'].apply(lambda x: os.path.join(data_path, str(x)))
+    train_dist['full_path'] = train_dist['img'].apply(lambda x: os.path.join(img_path, str(x)))
 
     # Identify text dups
     text_dups = train_dist.text.value_counts().reset_index(name="counter")
@@ -72,26 +86,39 @@ def clean_data(data_path="./data", force=False):
             rmv_ids.pop()
 
     # Output all files we need
-
+    print('')
+    print('Sizes after cleaning:')
     # a) Clean train file (All duplicates are in train)
     train = train[~train['id'].isin(rmv_ids)].copy()
-    train.to_json(path_or_buf=os.path.join(data_path, "train.jsonl"), orient='records', lines=True)
+    train.to_json(path_or_buf=os.path.join(save_path, "train.jsonl"), orient='records', lines=True)
+    print(f'train: {len(train)} memes')
 
     # b) Pretrain file for ITM & LM pre-training
     pretrain = pd.concat([train, dev_seen, dev_unseen])
-    #dim_error = [63805, 73026, 16845, 27058]  # The following ids throw some dimension error when pre-training
-    #pretrain = pretrain[~pretrain['id'].isin(dim_error)]
-    #pretrain["label"].fillna(0, inplace=True)
-    pretrain.to_json(path_or_buf=os.path.join(data_path, "pretrain.jsonl"), orient='records', lines=True)
+    pretrain.to_json(path_or_buf=os.path.join(save_path, "pretrain.jsonl"), orient='records', lines=True)
+    print(f'pretrain: {len(pretrain)} memes')
 
     # c) Cleaned Train + unused data from dev_unseen
     trainlarge = pd.concat([train, dev_unseen])
-    trainlarge.to_json(path_or_buf=os.path.join(data_path, "trainlarge.jsonl"), orient='records', lines=True)
+    trainlarge.to_json(path_or_buf=os.path.join(save_path, "trainlarge.jsonl"), orient='records', lines=True)
+    print(f'trainlarge: {len(trainlarge)} memes')
 
     # d) Cleaned Train + unused data from dev_unseen + dev_seen
-    traindev = pd.concat([train, dev_unseen, dev_seen])
-    traindev.to_json(path_or_buf=os.path.join(data_path, "traindev.jsonl"), orient='records', lines=True)
+    traindev = pd.concat([train, dev_seen, dev_unseen])
+    traindev.to_json(path_or_buf=os.path.join(save_path, "traindev.jsonl"), orient='records', lines=True)
+    print(f'traindev: {len(traindev)} memes')
+
+    # e) Full dev set
+    dev_all = pd.concat([dev_seen, dev_unseen])
+    dev_all.to_json(path_or_buf=os.path.join(save_path, "dev_all.jsonl"), orient='records', lines=True)
+    print(f'dev_all: {len(dev_all)} memes')
+
+    # f) Other sets
+    print(f'dev_seen: {len(dev_seen)} memes')
 
 
 if __name__ == '__main__':
-    clean_data(data_path='C:/Users/obarn/Projects/F-MT126-1/data/hmc_unseen/', force=True)
+    clean_data(data_path=r'C:\Users\obarn\Projects\F-MT126-1\vilio\data\features\annotations\gt',
+               img_path=r'C:\Users\obarn\Projects\F-MT126-1\data\hmc_unseen',
+               save_path=r'C:\Users\obarn\Projects\F-MT126-1\vilio\data\features\annotations',
+               force=True)

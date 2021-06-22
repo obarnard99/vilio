@@ -1,0 +1,31 @@
+sudo nvidia-docker run -v /home/ron_zhu/remote-sync/mmdetection/mmdet:/mmdetection/mmdet \
+    -v /home/ron_zhu/remote-sync/mmdetection/configs/:/mmdetection/configs \
+    -v "$HOME/Disk3":/Disk2 --shm-size 4g -it asia.gcr.io/$PROJECT_ID/mmdet:latest bash
+
+sudo nvidia-docker run -v /home/ron_zhu/remote-sync/mmdetection/mmdet:/mmdetection/mmdet \
+    --shm-size 4g -it asia.gcr.io/$PROJECT_ID/mmdet:latest bash
+
+
+Original Traceback (most recent call last):
+  File "/opt/conda/lib/python3.7/site-packages/torch/utils/data/_utils/worker.py", line 178, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/opt/conda/lib/python3.7/site-packages/torch/utils/data/_utils/fetch.py", line 44, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/opt/conda/lib/python3.7/site-packages/torch/utils/data/_utils/fetch.py", line 44, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/mmdetection/mmdet/datasets/dataset_wrappers.py", line 278, in __getitem__
+    return self.dataset[ori_index]
+  File "/mmdetection/mmdet/datasets/custom.py", line 185, in __getitem__
+    return self.prepare_test_img(idx)
+  File "/mmdetection/mmdet/datasets/custom.py", line 228, in prepare_test_img
+    return self.pipeline(results)
+  File "/mmdetection/mmdet/datasets/pipelines/compose.py", line 40, in __call__
+    data = t(data)
+  File "/mmdetection/mmdet/datasets/pipelines/loading.py", line 380, in __call__
+    results = self._load_bboxes(results)
+  File "/mmdetection/mmdet/datasets/pipelines/loading.py", line 242, in _load_bboxes
+    ann_info = results['ann_info']
+KeyError: 'ann_info'
+
+python3 tools/test.py configs/res2net/faster_rcnn_r2_101_fpn_2x_img_clip.py /Disk2/faster_rcnn_r2_101_fpn_2x_img_clip/epoch_1.pth --show-dir /Disk2/res2net__img_clip_test/
+python3 tools/test.py configs/res2net/faster_rcnn_r2_101_fpn_2x_gqa.py /Disk2/faster_rcnn_r2_101_fpn_2x_gqa_0922/epoch_2.pth --show-dir /Disk2/res2net_test/

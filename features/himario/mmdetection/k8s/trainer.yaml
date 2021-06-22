@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mmdet-trainer
+  labels:
+    app: mmdet-trainer
+spec:
+  template:
+    metadata:
+      labels:
+        app: mmdet-trainer
+    spec:
+      restartPolicy: OnFailure
+      volumes:
+        - name: mmdet-trainer-volume
+          persistentVolumeClaim:
+            claimName: mmdet-trainer-volume-claim
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: 4096Mi
+      containers:
+        - name: mmdet-trainer
+          image: asia.gcr.io/alfredlabs-model-training/mmdet
+          command: ["/bin/sh", "-c"]
+          args: [
+            "pip install mmcv==1.1.1 && ./tools/dist_train.sh configs/res2net/faster_rcnn_r2_101_fpn_2x_gqa.py 4 --work-dir /Disk2/faster_rcnn_r2_101_fpn_2x_gqa_0922 --resume-from /Disk2/faster_rcnn_r2_101_fpn_2x_gqa_0922/epoch_2.pth"
+          ]
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          resources:
+            limits:
+              cpu: "14"
+              memory: "90Gi"
+              nvidia.com/gpu: 4
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+          volumeMounts:
+            - mountPath: "/Disk2"
+              name: mmdet-trainer-volume
+            - mountPath: /dev/shm
+              name: cache-volume
+      nodeSelector:
+        cloud.google.com/gke-nodepool: gpu-pool-1

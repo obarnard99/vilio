@@ -18,6 +18,7 @@ def parse_args():
     parser.add_argument("--num_features", type=int, default=100, help='How many features we have per img (e.g. 100, 80)')
     parser.add_argument("--num_pos", type=int, default=4, help='How many position feats - 4 or 6')
     parser.add_argument("--features", type=str, default=None, help='Location of input features (either tsv file or dir with lmdb)')
+    parser.add_argument("--anno_dir", type=str, default=None, help='Location of annotation files')
 
     # Training Hyper-parameters
     parser.add_argument('--batchSize', dest='batch_size', type=int, default=8)
@@ -42,6 +43,7 @@ def parse_args():
     parser.add_argument("--tqdm", action='store_const', default=False, const=True)
     parser.add_argument("--topk", type=int, default=-1, help='For testing only load topk feats from tsv')
     parser.add_argument("--exp", type=str, default="experiment", help="Name of experiment for csv's")
+    parser.add_argument("--cleanup", action='store_const', default=False, const=True)
 
     # Model Loading & Saving - Note: PATHS must be put in here! 
     parser.add_argument('--model', type=str, default='X', help='Type of Model, X V O U D')

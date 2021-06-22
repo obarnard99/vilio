@@ -1,6 +1,7 @@
 import collections
 import os
 import random
+import time
 
 from tqdm import tqdm
 import numpy as np
@@ -11,9 +12,9 @@ from torch.utils.data import DataLoader
 from param import args
 
 if args.tsv:
-    from fts_tsv.hm_pretrain_data_tsv import InputExample, LXMERTDataset, LXMERTTorchDataset
+    from features.vilio.fts_tsv.hm_pretrain_data_tsv import InputExample, LXMERTDataset, LXMERTTorchDataset
 else:
-    from fts_lmdb.hm_pretrain_data import InputExample, LXMERTDataset, LXMERTTorchDataset
+    from features.vilio.fts_lmdb.hm_pretrain_data import InputExample, LXMERTDataset, LXMERTTorchDataset
 from utils.pandas_scripts import clean_data
 from src.vilio.transformers.tokenization_auto import AutoTokenizer
 from src.vilio.transformers.optimization import AdamW, get_linear_schedule_with_warmup
@@ -34,21 +35,18 @@ def get_tuple(splits: str, bs: int, shuffle=False, drop_last=False, topk=-1) -> 
 
     # Build dataset, data loader, and evaluator.
     dset = LXMERTDataset(splits)
-    tset = LXMERTTorchDataset(splits) # Remove topk
+    tset = LXMERTTorchDataset(splits, feature_path=args.features)  # Remove topk
     data_loader = DataLoader(
         tset, batch_size=bs,
         shuffle=shuffle, num_workers=args.num_workers,
         collate_fn=lambda x: x,
         drop_last=drop_last, pin_memory=True
     )
-    #evaluator = LXMERTEvaluator(dset)
+    # evaluator = LXMERTEvaluator(dset)
     evaluator = None
     print()
 
     return DataTuple(dataset=dset, torchdset=tset, loader=data_loader, evaluator=evaluator)
-
-# Create pretrain.jsonl & traindev data
-clean_data("./data")
 
 train_tuple = get_tuple(args.train, args.batch_size, shuffle=True, drop_last=True)
 valid_tuple = None
@@ -372,15 +370,14 @@ class LXMERT:
             if args.task_qa:
                 train_tuple.evaluator.evaluate(uid2ans, pprint=True)
                 
-            if epoch == 5:
-                self.save("Epoch%02d" % (epoch+1))
+            #if epoch == 5:
+            #    self.save("Epoch%02d" % (epoch+1))
 
-        self.save("LAST")
-
+        self.save("LAST_" + args.exp)
 
     def save(self, name):
         torch.save(self.model.state_dict(),
-                   os.path.join(args.output, "%s_BX.pth" % name))
+                   os.path.join(args.output, f"{name}.pth"))
 
     def load(self, path):
         print("Load BERT extractor from %s" % path)
@@ -422,7 +419,9 @@ if __name__ == "__main__":
 
     lxmert = LXMERT(max_seq_length=128)
 
+    start = time.time()
     lxmert.train(train_tuple, valid_tuple)
+    print(f'Pre-training completed in {time.time() - start}s')
 
 
 

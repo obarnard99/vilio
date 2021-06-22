@@ -1,5 +1,6 @@
 import collections
 import os
+import time
 
 import torch
 import torch.nn as nn
@@ -9,18 +10,18 @@ from tqdm import tqdm
 from param import args
 
 if args.tsv:
-    from fts_tsv.hm_data_tsv import HMTorchDataset, HMEvaluator, HMDataset
+    from features.vilio.fts_tsv.hm_data_tsv import HMTorchDataset, HMEvaluator, HMDataset
 else:
-    from fts_lmdb.hm_data import HMTorchDataset, HMEvaluator, HMDataset
+    from features.vilio.fts_lmdb.hm_data import HMTorchDataset, HMEvaluator, HMDataset
 
 from src.vilio.transformers.optimization import AdamW, get_linear_schedule_with_warmup
 from utils.pandas_scripts import clean_data
 
-from entryU import ModelU
-from entryX import ModelX
-from entryV import ModelV
-from entryD import ModelD
-from entryO import ModelO
+from models.U import ModelU
+from models.X import ModelX
+from models.V import ModelV
+from models.D import ModelD
+from models.O import ModelO
 
 # Two different SWA Methods - https://pytorch.org/blog/pytorch-1.6-now-includes-stochastic-weight-averaging/
 if args.swa:
@@ -31,11 +32,6 @@ if args.contrib:
 
 # Largely sticking to standards set in LXMERT here
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
-
-
-class ParallelWrapper(nn.DataParallel):
-    def __getattr__(self, name):
-        return getattr(self.module, name)
 
 
 def get_tuple(splits: str, bs: int, shuffle=False, drop_last=False) -> DataTuple:
@@ -85,10 +81,6 @@ class HM:
         # Load pre-trained weights from paths
         if args.loadpre is not None:
             self.model.load(args.loadpre)
-
-        # GPU options
-        if args.multiGPU:
-            self.model = ParallelWrapper(self.model)
 
         self.model = self.model.cuda(0)
 
@@ -266,7 +258,7 @@ class HM:
             if args.contrib:
                 self.optim.swap_swa_sgd()
 
-        self.save("LAST" + args.train)
+        self.save("LAST" + args.train + args.exp)
 
     def predict(self, eval_tuple: DataTuple, dump=None, out_csv=True):
 
@@ -349,6 +341,9 @@ class HM:
         state_dict = new_state_dict
         self.model.load_state_dict(state_dict)
 
+    def cleanup(self):
+        os.remove(os.path.join(self.output, "LAST" + args.train + args.exp + ".pth"))
+
 
 def main():
     # Build Class
@@ -360,41 +355,47 @@ def main():
 
     # Train and/or Test:
     if args.train is not None:
+        start = time.time()
         print('Splits in Train data:', hm.train_tuple.dataset.splits)
         if hm.valid_tuple is not None:
             print('Splits in Valid data:', hm.valid_tuple.dataset.splits)
         else:
             print("DO NOT USE VALIDATION")
         hm.train(hm.train_tuple, hm.valid_tuple)
-
-        # If we also test afterwards load the last model
-        if args.test is not None:
-            hm.load(os.path.join(hm.output, "LAST" + args.train + ".pth"))
+        print(f'Training completed in {time.time()-start}s')
 
     if args.test is not None:
+        hm.load(os.path.join(hm.output, "LAST" + args.train + args.exp + ".pth"))
         # We can specify multiple test args e.g. test,test_unseen
         for split in args.test.split(","):
             # Anthing that has no labels:
             if 'test' in split:
+                start = time.time()
                 hm.predict(
                     get_tuple(split, bs=args.batch_size,
                               shuffle=False, drop_last=False),
                     dump=os.path.join(args.output, '{}_{}.csv'.format(args.exp, split))
                 )
+                print(f'Inference (test) completed in {time.time() - start}s')
             # Anything else that has labels:
             elif 'dev' in split or 'valid' in split or 'train' in split:
+                start = time.time()
                 result = hm.evaluate(
                     get_tuple(split, bs=args.batch_size,
                               shuffle=False, drop_last=False),
                     dump=os.path.join(args.output, '{}_{}.csv'.format(args.exp, split))
                 )
+                print(f'Inference (dev) completed in {time.time() - start}s')
                 print(result)
             else:
                 assert False, "No such test option for %s" % args.test
 
+    if args.cleanup:
+        hm.cleanup()
+
 
 if __name__ == "__main__":
     # Create pretrain.jsonl & traindev data
-    clean_data("./data")
+    clean_data("./data/features/annotations")
 
     main()

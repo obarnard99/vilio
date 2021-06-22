@@ -1,0 +1,6 @@
+matplotlib
+numpy
+pycocotools@git+https://github.com/open-mmlab/cocoapi.git@9fa16b488b4f5800134eff4f82e53d4c65b132a5#subdirectory=pycocotools
+six
+terminaltables
+fire
