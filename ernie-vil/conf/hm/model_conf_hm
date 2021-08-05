@@ -1,4 +1,4 @@
-output_model_path="output_hm"
+output_model_path="/home/ojrb2/vilio/data/models"
 lr_scheduler="manual_warmup_decay"
 decay_steps="13308;19962"
 lr_decay_ratio=0.1
