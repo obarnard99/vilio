@@ -31,8 +31,7 @@ if [[ ${use_fuse} == "true" ]]; then
     export FLAGS_fuse_parameter_groups_size=10
 fi
 
-TASK_GROUP_JSON=./conf/$TASK_NAME/task_${TASK_NAME}.json 
-#_${SUB_TASK_NAME}.json
+TASK_GROUP_JSON=./conf/$TASK_NAME/task_${TASK_NAME}_${SUB_TASK_NAME}.json
 
 python finetune.py --use_cuda "True"                                           \
                 --use_fast_executor ${e_executor-"True"}                       \

@@ -151,7 +151,7 @@ def double_data(data_path="./data"):
     It also creates a dummy column "label" which is just set to 0. 
     The test data is only used at inference.
     """
-    data = ["train", "traindev", "dev_seen", "test_seen", "test_unseen"]
+    data = ["train", "traindev", "dev_seen", "test_seen", "test_unseen", "dev_all"]
 
     preds = {}
     for csv in sorted(os.listdir(data_path)):

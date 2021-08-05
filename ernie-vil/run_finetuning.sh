@@ -12,6 +12,8 @@ ERNIE_VIL_CONFIG=$4
 PRETRAIN_MODELS=$5
 SPLIT=$6
 STOP=$7
+SUB_TASK_NAME=$8
+EXP=$9
 
 source $CONF_FILE
 
@@ -32,7 +34,7 @@ if [[ ${use_fuse} == "true" ]]; then
 fi
 
 
-TASK_GROUP_JSON=./conf/$TASK_NAME/task_${TASK_NAME}.json
+TASK_GROUP_JSON=./conf/$TASK_NAME/task_${TASK_NAME}_${SUB_TASK_NAME}.json
 
 gpu_cnt=`echo $CUDA_VISIBLE_DEVICES | awk -F"\t" '{len=split($0,vec,",");print len}'`
 echo "gpu_cnt", $gpu_cnt
@@ -61,6 +63,7 @@ python finetune.py --use_cuda "True"                                           \
                 --validation_steps ${VALID_STEPS}                              \
                 --skip_steps 10                                                \
                 --split ${SPLIT}                                               \
-                --stop_steps ${STOP}
+                --stop_steps ${STOP}                                           \
+                --exp ${EXP}
 
 

@@ -520,7 +520,7 @@ def main(args):
                     print("%s current learning_rate:%.8f" % (date_str, np_lr))
 
                     if steps % args.save_steps == 0:
-                        save_path = os.path.join(args.checkpoints, "step_" + str(steps) + str(args.split))
+                        save_path = os.path.join(args.checkpoints, args.exp)
                         print("save_path:", save_path)
                         fluid.io.save_persistables(exe, save_path, train_program)
                     time_end = time.time()
@@ -541,8 +541,8 @@ if __name__ == '__main__':
 
     if args.task_name == "hm":
         # Create pretrain.jsonl & traindev data
-        clean_data("./data/hm")
+        clean_data("./data/hm/annotations")
         # This handles formatting for the E-Models. There needs to be a label column & some data needs to be copied to the end for length requirements.
-        double_data("./data/hm")
+        double_data("./data/hm/annotations")
 
     main(args)
